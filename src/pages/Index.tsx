@@ -3,6 +3,7 @@ import ProductsShowcase from "@/components/ProductsShowcase";
 import FeaturesSection from "@/components/FeaturesSection";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import CTASection from "@/components/CTASection";
+import BrandSection from "@/components/BrandSection";
 
 const Index = () => {
   return (
@@ -12,6 +13,7 @@ const Index = () => {
       <FeaturesSection />
       <TestimonialsSection />
       <CTASection />
+      <BrandSection />
     </div>
   );
 };

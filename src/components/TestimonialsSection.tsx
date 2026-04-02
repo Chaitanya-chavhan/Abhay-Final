@@ -1,4 +1,5 @@
 import { Star } from "lucide-react";
+import { ScrollReveal } from "@/hooks/useScrollReveal";
 
 const testimonials = [
   {
@@ -23,35 +24,37 @@ const testimonials = [
 
 const TestimonialsSection = () => {
   return (
-    <section className="border-t border-border bg-background py-20">
+    <section className="border-t border-border/50 bg-background py-24">
       <div className="container mx-auto px-4">
-        <span className="mb-4 block text-center text-sm font-medium text-primary">TESTIMONIALS</span>
-        <h2 className="text-center font-heading text-3xl font-bold text-foreground md:text-4xl">
-          Hear From Our Customers
-        </h2>
+        <ScrollReveal>
+          <span className="mb-4 block text-center text-sm font-medium tracking-widest text-primary">TESTIMONIALS</span>
+          <h2 className="text-center font-heading text-3xl font-bold text-foreground md:text-5xl">
+            Hear From Our Customers
+          </h2>
+        </ScrollReveal>
 
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
-          {testimonials.map((t) => (
-            <div
-              key={t.name}
-              className="rounded-2xl border border-border bg-card p-6"
-            >
-              <div className="flex gap-1">
-                {Array.from({ length: t.rating }).map((_, i) => (
-                  <Star key={i} className="h-4 w-4 fill-primary text-primary" />
-                ))}
-              </div>
-              <p className="mt-4 text-sm text-muted-foreground">{t.text}</p>
-              <div className="mt-6 flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 font-heading font-bold text-primary">
-                  {t.name.charAt(0)}
+        <div className="mt-14 grid gap-6 md:grid-cols-3">
+          {testimonials.map((t, i) => (
+            <ScrollReveal key={t.name} delay={i * 0.12}>
+              <div className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card p-7 transition-all duration-500 hover:border-primary/30 hover:-translate-y-1">
+                <div className="absolute top-0 left-0 h-1 w-0 bg-primary transition-all duration-500 group-hover:w-full" />
+                <div className="flex gap-1">
+                  {Array.from({ length: t.rating }).map((_, i) => (
+                    <Star key={i} className="h-4 w-4 fill-primary text-primary" />
+                  ))}
                 </div>
-                <div>
-                  <div className="text-sm font-semibold text-foreground">{t.name}</div>
-                  <div className="text-xs text-muted-foreground">{t.role}</div>
+                <p className="mt-5 text-sm leading-relaxed text-muted-foreground">&ldquo;{t.text}&rdquo;</p>
+                <div className="mt-6 flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 font-heading text-lg font-bold text-primary transition-colors duration-300 group-hover:bg-primary group-hover:text-primary-foreground">
+                    {t.name.charAt(0)}
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold text-foreground">{t.name}</div>
+                    <div className="text-xs text-muted-foreground">{t.role}</div>
+                  </div>
                 </div>
               </div>
-            </div>
+            </ScrollReveal>
           ))}
         </div>
       </div>
