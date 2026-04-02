@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Menu, X, User, LogOut, Package } from "lucide-react";
@@ -6,8 +6,15 @@ import { Button } from "@/components/ui/button";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const { user, signInWithGoogle, logout } = useAuth();
   const location = useLocation();
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const links = [
     { to: "/", label: "Home" },
@@ -18,25 +25,34 @@ const Navbar = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
-      <div className="container mx-auto flex items-center justify-between px-4 py-4">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+    <nav
+      className={`fixed top-4 left-1/2 z-50 -translate-x-1/2 transition-all duration-500 ${
+        scrolled
+          ? "w-[95%] max-w-5xl rounded-2xl border border-border/60 bg-background/70 shadow-lg shadow-background/50 backdrop-blur-2xl"
+          : "w-[95%] max-w-6xl rounded-2xl border border-transparent bg-transparent backdrop-blur-none"
+      }`}
+    >
+      <div className="flex items-center justify-between px-5 py-3">
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-2.5 group">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary transition-transform duration-300 group-hover:scale-110">
             <span className="font-heading text-lg font-bold text-primary-foreground">A</span>
           </div>
-          <span className="font-heading text-lg font-semibold text-foreground">
-            Abhay Digital
-          </span>
+          <div className="flex flex-col leading-tight">
+            <span className="font-heading text-sm font-bold text-foreground">Abhay Digital</span>
+            <span className="text-[10px] text-muted-foreground">Product Store</span>
+          </div>
         </Link>
 
-        <div className="hidden items-center gap-1 rounded-full border border-border bg-secondary/50 px-2 py-1 md:flex">
+        {/* Center nav pill */}
+        <div className="hidden items-center gap-0.5 rounded-full border border-border/50 bg-card/60 px-1.5 py-1 backdrop-blur-sm md:flex">
           {links.map((l) => (
             <Link
               key={l.to}
               to={l.to}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+              className={`relative rounded-full px-5 py-2 text-sm font-medium transition-all duration-300 ${
                 isActive(l.to)
-                  ? "bg-primary text-primary-foreground"
+                  ? "bg-primary text-primary-foreground shadow-md shadow-primary/30"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -45,16 +61,17 @@ const Navbar = () => {
           ))}
         </div>
 
+        {/* Right side */}
         <div className="hidden items-center gap-3 md:flex">
           {user ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Link to="/dashboard">
-                <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">
+                <Button variant="ghost" size="sm" className="gap-2 rounded-full text-muted-foreground hover:text-foreground">
                   <Package className="h-4 w-4" />
                   Dashboard
                 </Button>
               </Link>
-              <div className="flex items-center gap-2 rounded-full border border-border bg-secondary/50 px-3 py-1.5">
+              <div className="flex items-center gap-2 rounded-full border border-border/50 bg-card/60 px-3 py-1.5">
                 {user.photoURL ? (
                   <img src={user.photoURL} alt="" className="h-6 w-6 rounded-full" />
                 ) : (
@@ -62,31 +79,40 @@ const Navbar = () => {
                 )}
                 <span className="text-sm text-foreground">{user.displayName?.split(" ")[0]}</span>
               </div>
-              <Button variant="ghost" size="icon" onClick={logout} className="text-muted-foreground hover:text-foreground">
+              <Button variant="ghost" size="icon" onClick={logout} className="rounded-full text-muted-foreground hover:text-foreground">
                 <LogOut className="h-4 w-4" />
               </Button>
             </div>
           ) : (
-            <Button onClick={signInWithGoogle} className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90">
+            <button
+              onClick={signInWithGoogle}
+              className="rounded-full bg-primary px-6 py-2 text-sm font-semibold text-primary-foreground transition-all duration-300 hover:shadow-lg hover:shadow-primary/30 hover:scale-105 active:scale-95"
+            >
               Sign In
-            </Button>
+            </button>
           )}
         </div>
 
+        {/* Mobile toggle */}
         <button onClick={() => setOpen(!open)} className="text-foreground md:hidden">
           {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </div>
 
-      {open && (
-        <div className="border-t border-border bg-background p-4 md:hidden">
+      {/* Mobile menu */}
+      <div
+        className={`overflow-hidden transition-all duration-300 md:hidden ${
+          open ? "max-h-96 border-t border-border/30" : "max-h-0"
+        }`}
+      >
+        <div className="p-4 space-y-1">
           {links.map((l) => (
             <Link
               key={l.to}
               to={l.to}
               onClick={() => setOpen(false)}
-              className={`block rounded-lg px-4 py-3 text-sm font-medium ${
-                isActive(l.to) ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+              className={`block rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
+                isActive(l.to) ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-card"
               }`}
             >
               {l.label}
@@ -94,20 +120,20 @@ const Navbar = () => {
           ))}
           {user ? (
             <>
-              <Link to="/dashboard" onClick={() => setOpen(false)} className="block rounded-lg px-4 py-3 text-sm text-muted-foreground">
+              <Link to="/dashboard" onClick={() => setOpen(false)} className="block rounded-xl px-4 py-3 text-sm text-muted-foreground hover:bg-card">
                 Dashboard
               </Link>
-              <button onClick={() => { logout(); setOpen(false); }} className="w-full rounded-lg px-4 py-3 text-left text-sm text-destructive">
+              <button onClick={() => { logout(); setOpen(false); }} className="w-full rounded-xl px-4 py-3 text-left text-sm text-destructive hover:bg-card">
                 Sign Out
               </button>
             </>
           ) : (
-            <button onClick={() => { signInWithGoogle(); setOpen(false); }} className="mt-2 w-full rounded-lg bg-primary px-4 py-3 text-sm font-medium text-primary-foreground">
+            <button onClick={() => { signInWithGoogle(); setOpen(false); }} className="mt-2 w-full rounded-xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground">
               Sign In with Google
             </button>
           )}
         </div>
-      )}
+      </div>
     </nav>
   );
 };
