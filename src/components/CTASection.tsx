@@ -8,9 +8,8 @@ const CTASection = () => {
       <div className="container mx-auto px-4">
         <ScrollReveal direction="scale">
           <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/10 via-background to-background p-14 text-center md:p-20">
-            {/* Glow effects */}
-            <div className="absolute -right-20 -top-20 h-60 w-60 rounded-full opacity-20 blur-[100px]" style={{ background: "hsl(25 95% 53%)" }} />
-            <div className="absolute -left-20 -bottom-20 h-40 w-40 rounded-full opacity-10 blur-[80px]" style={{ background: "hsl(35 100% 60%)" }} />
+            <div className="absolute -right-20 -top-20 h-60 w-60 rounded-full opacity-20 blur-[100px]" style={{ background: "hsl(217 91% 60%)" }} />
+            <div className="absolute -left-20 -bottom-20 h-40 w-40 rounded-full opacity-10 blur-[80px]" style={{ background: "hsl(199 89% 48%)" }} />
             
             <div className="relative">
               <span className="text-sm font-medium tracking-widest text-primary">NOT SURE WHICH PRODUCT FITS YOU?</span>
@@ -22,6 +21,7 @@ const CTASection = () => {
               </p>
               <Link
                 to="/products"
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                 className="group mt-10 inline-flex items-center gap-2 rounded-full bg-primary px-10 py-4 font-semibold text-primary-foreground transition-all duration-300 hover:shadow-2xl hover:shadow-primary/30 hover:scale-105 active:scale-95"
               >
                 Explore Products
