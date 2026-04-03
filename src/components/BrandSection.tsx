@@ -6,7 +6,7 @@ const BrandSection = () => {
       <ScrollReveal>
         <div className="group relative cursor-default select-none py-8">
           <svg
-            viewBox="0 0 1400 220"
+            viewBox="0 0 1800 220"
             className="w-full"
             xmlns="http://www.w3.org/2000/svg"
           >
@@ -15,17 +15,29 @@ const BrandSection = () => {
               y="50%"
               dominantBaseline="central"
               textAnchor="middle"
-              className="fill-transparent stroke-[0.5] transition-all duration-700 group-hover:fill-primary/10 group-hover:stroke-primary"
+              className="fill-transparent transition-all duration-700 group-hover:fill-primary/15"
               style={{
-                fontFamily: "'Space Grotesk', sans-serif",
-                fontSize: "140px",
-                fontWeight: 700,
-                stroke: "hsl(0 0% 20%)",
+                fontFamily: "'Satoshi', sans-serif",
+                fontSize: "130px",
+                fontWeight: 800,
+                stroke: "hsl(220 15% 20%)",
                 strokeWidth: 0.8,
                 letterSpacing: "-0.02em",
+                filter: "drop-shadow(0 0 0px transparent)",
+                transition: "filter 0.7s ease, fill 0.7s ease, stroke 0.7s ease",
+              }}
+              onMouseEnter={(e) => {
+                const el = e.currentTarget;
+                el.style.stroke = "hsl(217 91% 60%)";
+                el.style.filter = "drop-shadow(0 0 20px hsl(217 91% 60% / 0.5)) drop-shadow(0 0 60px hsl(217 91% 60% / 0.3))";
+              }}
+              onMouseLeave={(e) => {
+                const el = e.currentTarget;
+                el.style.stroke = "hsl(220 15% 20%)";
+                el.style.filter = "drop-shadow(0 0 0px transparent)";
               }}
             >
-              Abhay Digital
+              Abhay Digital Products
             </text>
           </svg>
         </div>

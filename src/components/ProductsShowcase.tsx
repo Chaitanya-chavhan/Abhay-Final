@@ -1,12 +1,31 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import ProductCard from "./ProductCard";
-import { products, categories } from "@/lib/products";
+import { categories, type Product } from "@/lib/products";
 import { ScrollReveal } from "@/hooks/useScrollReveal";
+import { supabase } from "@/integrations/supabase/client";
 
 const ProductsShowcase = ({ showAll = false }: { showAll?: boolean }) => {
   const [active, setActive] = useState("All");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("id, title, description, price, original_price, category, image_url, features, tag, is_active, created_at, updated_at")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
+
+      if (!error && data) {
+        setProducts(data as Product[]);
+      }
+      setLoading(false);
+    };
+    fetchProducts();
+  }, []);
 
   const filtered = active === "All" ? products : products.filter((p) => p.category === active);
   const display = showAll ? filtered : filtered.slice(0, 6);
@@ -46,19 +65,30 @@ const ProductsShowcase = ({ showAll = false }: { showAll?: boolean }) => {
           </div>
         </ScrollReveal>
 
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {display.map((p, i) => (
-            <ScrollReveal key={p.id} delay={0.1 + i * 0.1} direction="up">
-              <ProductCard product={p} />
-            </ScrollReveal>
-          ))}
-        </div>
+        {loading ? (
+          <div className="mt-12 flex justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          </div>
+        ) : display.length === 0 ? (
+          <div className="mt-12 text-center">
+            <p className="text-muted-foreground">No products available yet. Check back soon!</p>
+          </div>
+        ) : (
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {display.map((p, i) => (
+              <ScrollReveal key={p.id} delay={0.1 + i * 0.1} direction="up">
+                <ProductCard product={p} />
+              </ScrollReveal>
+            ))}
+          </div>
+        )}
 
         {!showAll && filtered.length > 6 && (
           <ScrollReveal delay={0.2}>
             <div className="mt-12 text-center">
               <Link
                 to="/products"
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                 className="group inline-flex items-center gap-2 rounded-full border border-border px-8 py-3.5 text-sm font-medium text-foreground transition-all duration-300 hover:border-primary hover:text-primary hover:shadow-lg hover:shadow-primary/10"
               >
                 View All Products

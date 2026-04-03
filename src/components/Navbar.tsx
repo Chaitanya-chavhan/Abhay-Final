@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Menu, X, User, LogOut, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const { user, signInWithGoogle, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -24,6 +25,15 @@ const Navbar = () => {
 
   const isActive = (path: string) => location.pathname === path;
 
+  const handleNavClick = (to: string) => {
+    setOpen(false);
+    navigate(to);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const avatarUrl = user?.user_metadata?.avatar_url;
+  const displayName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email;
+
   return (
     <nav
       className={`fixed top-4 left-1/2 z-50 -translate-x-1/2 transition-all duration-500 ${
@@ -33,23 +43,21 @@ const Navbar = () => {
       }`}
     >
       <div className="flex items-center justify-between px-5 py-3">
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2.5 group">
+        <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex items-center gap-2.5 group">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary transition-transform duration-300 group-hover:scale-110">
             <span className="font-heading text-lg font-bold text-primary-foreground">A</span>
           </div>
           <div className="flex flex-col leading-tight">
             <span className="font-heading text-sm font-bold text-foreground">Abhay Digital</span>
-            <span className="text-[10px] text-muted-foreground">Product Store</span>
+            <span className="text-[10px] text-muted-foreground">Products</span>
           </div>
         </Link>
 
-        {/* Center nav pill */}
         <div className="hidden items-center gap-0.5 rounded-full border border-border/50 bg-card/60 px-1.5 py-1 backdrop-blur-sm md:flex">
           {links.map((l) => (
-            <Link
+            <button
               key={l.to}
-              to={l.to}
+              onClick={() => handleNavClick(l.to)}
               className={`relative rounded-full px-5 py-2 text-sm font-medium transition-all duration-300 ${
                 isActive(l.to)
                   ? "bg-primary text-primary-foreground shadow-md shadow-primary/30"
@@ -57,27 +65,26 @@ const Navbar = () => {
               }`}
             >
               {l.label}
-            </Link>
+            </button>
           ))}
         </div>
 
-        {/* Right side */}
         <div className="hidden items-center gap-3 md:flex">
           {user ? (
             <div className="flex items-center gap-2">
-              <Link to="/dashboard">
+              <Link to="/dashboard" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
                 <Button variant="ghost" size="sm" className="gap-2 rounded-full text-muted-foreground hover:text-foreground">
                   <Package className="h-4 w-4" />
                   Dashboard
                 </Button>
               </Link>
               <div className="flex items-center gap-2 rounded-full border border-border/50 bg-card/60 px-3 py-1.5">
-                {user.photoURL ? (
-                  <img src={user.photoURL} alt="" className="h-6 w-6 rounded-full" />
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="" className="h-6 w-6 rounded-full" />
                 ) : (
                   <User className="h-4 w-4 text-muted-foreground" />
                 )}
-                <span className="text-sm text-foreground">{user.displayName?.split(" ")[0]}</span>
+                <span className="text-sm text-foreground">{displayName?.toString().split(" ")[0]}</span>
               </div>
               <Button variant="ghost" size="icon" onClick={logout} className="rounded-full text-muted-foreground hover:text-foreground">
                 <LogOut className="h-4 w-4" />
@@ -93,13 +100,11 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Mobile toggle */}
         <button onClick={() => setOpen(!open)} className="text-foreground md:hidden">
           {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </div>
 
-      {/* Mobile menu */}
       <div
         className={`overflow-hidden transition-all duration-300 md:hidden ${
           open ? "max-h-96 border-t border-border/30" : "max-h-0"
@@ -107,22 +112,21 @@ const Navbar = () => {
       >
         <div className="p-4 space-y-1">
           {links.map((l) => (
-            <Link
+            <button
               key={l.to}
-              to={l.to}
-              onClick={() => setOpen(false)}
-              className={`block rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
+              onClick={() => handleNavClick(l.to)}
+              className={`block w-full text-left rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
                 isActive(l.to) ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-card"
               }`}
             >
               {l.label}
-            </Link>
+            </button>
           ))}
           {user ? (
             <>
-              <Link to="/dashboard" onClick={() => setOpen(false)} className="block rounded-xl px-4 py-3 text-sm text-muted-foreground hover:bg-card">
+              <button onClick={() => handleNavClick("/dashboard")} className="block w-full text-left rounded-xl px-4 py-3 text-sm text-muted-foreground hover:bg-card">
                 Dashboard
-              </Link>
+              </button>
               <button onClick={() => { logout(); setOpen(false); }} className="w-full rounded-xl px-4 py-3 text-left text-sm text-destructive hover:bg-card">
                 Sign Out
               </button>

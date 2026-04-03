@@ -26,7 +26,7 @@ const HeroSection = () => {
         className="absolute inset-0 opacity-[0.03]"
         style={{
           backgroundImage:
-            "linear-gradient(hsl(0 0% 50%) 1px, transparent 1px), linear-gradient(90deg, hsl(0 0% 50%) 1px, transparent 1px)",
+            "linear-gradient(hsl(215 15% 50%) 1px, transparent 1px), linear-gradient(90deg, hsl(215 15% 50%) 1px, transparent 1px)",
           backgroundSize: "60px 60px",
         }}
       />
@@ -39,12 +39,11 @@ const HeroSection = () => {
         <div className="absolute left-3/4 top-0 h-full w-[1px] rotate-[25deg] bg-foreground" />
       </div>
 
-      {/* Glow orbs */}
-      <div className="absolute left-1/2 top-1/4 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-15 blur-[150px]" style={{ background: "hsl(25 95% 53%)" }} />
-      <div className="absolute right-0 top-3/4 h-[300px] w-[300px] rounded-full opacity-10 blur-[120px]" style={{ background: "hsl(35 100% 60%)" }} />
+      {/* Glow orbs - blue */}
+      <div className="absolute left-1/2 top-1/4 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-15 blur-[150px]" style={{ background: "hsl(217 91% 60%)" }} />
+      <div className="absolute right-0 top-3/4 h-[300px] w-[300px] rounded-full opacity-10 blur-[120px]" style={{ background: "hsl(199 89% 48%)" }} />
 
       <div className="container relative mx-auto flex min-h-screen flex-col items-center justify-center px-4 text-center">
-        {/* Badge */}
         <div className="mb-8 animate-fade-in">
           <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-5 py-2 text-sm font-medium text-primary backdrop-blur-sm">
             <Zap className="h-3.5 w-3.5" />
@@ -52,7 +51,6 @@ const HeroSection = () => {
           </span>
         </div>
 
-        {/* Main headline */}
         <h1 className="animate-slide-up font-heading text-5xl font-bold leading-[1.1] text-foreground sm:text-6xl md:text-8xl tracking-tight">
           Get Premium{" "}
           <span
@@ -73,13 +71,11 @@ const HeroSection = () => {
           </span>
         </h1>
 
-        {/* Subtitle */}
         <p className="animate-slide-up mx-auto mt-8 max-w-2xl text-lg text-muted-foreground md:text-xl" style={{ animationDelay: "0.15s" }}>
           Join a growing community of creators getting premium digital assets — HD clips,
           editing elements, courses & more — all in one place.
         </p>
 
-        {/* Trust badges */}
         <div className="animate-slide-up mt-6 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground" style={{ animationDelay: "0.2s" }}>
           <span className="flex items-center gap-2"><Shield className="h-4 w-4 text-primary" /> Secure Access</span>
           <span className="flex items-center gap-2"><Download className="h-4 w-4 text-primary" /> Instant Delivery</span>
@@ -88,10 +84,10 @@ const HeroSection = () => {
           </span>
         </div>
 
-        {/* CTA */}
         <div className="animate-slide-up mt-10 flex flex-col items-center gap-4 sm:flex-row" style={{ animationDelay: "0.25s" }}>
           <Link
             to="/products"
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             className="group flex items-center gap-2 rounded-full bg-primary px-10 py-4 text-base font-semibold text-primary-foreground transition-all duration-300 hover:shadow-2xl hover:shadow-primary/30 hover:scale-105 active:scale-95"
           >
             Explore Products
@@ -99,19 +95,19 @@ const HeroSection = () => {
           </Link>
           <Link
             to="/about"
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             className="rounded-full border border-border px-10 py-4 text-base font-medium text-foreground transition-all duration-300 hover:bg-card hover:border-primary/40"
           >
             Learn More
           </Link>
         </div>
 
-        {/* Stats */}
         <div className="animate-slide-up mt-24 grid w-full max-w-3xl grid-cols-3 gap-4 md:gap-6" style={{ animationDelay: "0.35s" }}>
           {[
             { value: "500+", label: "Happy Customers" },
             { value: "10k+", label: "Products Delivered" },
             { value: "₹49", label: "Starting Price" },
-          ].map((s, i) => (
+          ].map((s) => (
             <div
               key={s.label}
               className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card/30 p-6 backdrop-blur-sm transition-all duration-300 hover:border-primary/40 hover:bg-card/60"
@@ -125,7 +121,6 @@ const HeroSection = () => {
           ))}
         </div>
 
-        {/* Scroll indicator */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
           <div className="h-8 w-5 rounded-full border-2 border-muted-foreground/30 p-1">
             <div className="h-2 w-1.5 mx-auto rounded-full bg-primary animate-pulse" />
