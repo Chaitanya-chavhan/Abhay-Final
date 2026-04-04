@@ -55,7 +55,7 @@ const ProductsShowcase = ({ showAll = false }: { showAll?: boolean }) => {
                 onClick={() => setActive(c)}
                 className={`rounded-full px-6 py-2.5 text-sm font-medium transition-all duration-300 ${
                   active === c
-                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105"
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/15 scale-105"
                     : "border border-border text-muted-foreground hover:text-foreground hover:border-primary/40"
                 }`}
               >
@@ -89,7 +89,7 @@ const ProductsShowcase = ({ showAll = false }: { showAll?: boolean }) => {
               <Link
                 to="/products"
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                className="group inline-flex items-center gap-2 rounded-full border border-border px-8 py-3.5 text-sm font-medium text-foreground transition-all duration-300 hover:border-primary hover:text-primary hover:shadow-lg hover:shadow-primary/10"
+                className="group inline-flex items-center gap-2 rounded-full border border-border px-8 py-3.5 text-sm font-medium text-foreground transition-all duration-300 hover:border-primary hover:text-primary hover:shadow-lg hover:shadow-primary/5"
               >
                 View All Products
                 <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />

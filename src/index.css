@@ -2,27 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;500;600;700;800;900&family=General+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 @layer base {
   :root {
-    --background: 220 20% 4%;
-    --foreground: 210 20% 95%;
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
 
-    --card: 220 18% 7%;
-    --card-foreground: 210 20% 95%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
 
-    --popover: 220 18% 7%;
-    --popover-foreground: 210 20% 95%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
 
     --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 15% 12%;
-    --secondary-foreground: 210 20% 95%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 220 14% 16%;
-    --muted-foreground: 215 15% 50%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
 
     --accent: 217 91% 60%;
     --accent-foreground: 0 0% 100%;
@@ -30,26 +30,26 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 14%;
-    --input: 220 15% 14%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
     --ring: 217 91% 60%;
 
     --radius: 0.75rem;
 
     --gradient-accent: linear-gradient(135deg, hsl(217 91% 60%), hsl(199 89% 48%));
-    --shadow-glow: 0 0 60px hsl(217 91% 60% / 0.15);
-    --shadow-card: 0 4px 30px hsl(0 0% 0% / 0.5);
+    --shadow-glow: 0 0 60px hsl(217 91% 60% / 0.12);
+    --shadow-card: 0 4px 24px hsl(222 47% 11% / 0.06);
 
-    --font-heading: 'Satoshi', sans-serif;
-    --font-body: 'General Sans', sans-serif;
+    --font-heading: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
 
-    --sidebar-background: 220 18% 5%;
-    --sidebar-foreground: 210 20% 95%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
     --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 15% 12%;
-    --sidebar-accent-foreground: 210 20% 95%;
-    --sidebar-border: 220 15% 14%;
+    --sidebar-accent: 210 40% 96%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 32% 91%;
     --sidebar-ring: 217 91% 60%;
   }
 }
@@ -71,8 +71,8 @@
   }
 
   ::selection {
-    background: hsl(217 91% 60% / 0.3);
-    color: hsl(0 0% 100%);
+    background: hsl(217 91% 60% / 0.2);
+    color: hsl(222 47% 11%);
   }
 }
 
@@ -103,9 +103,9 @@
   }
 
   .neon-glow {
-    text-shadow: 0 0 10px hsl(217 91% 60% / 0.6),
-                 0 0 30px hsl(217 91% 60% / 0.4),
-                 0 0 60px hsl(217 91% 60% / 0.2);
+    text-shadow: 0 0 10px hsl(217 91% 60% / 0.5),
+                 0 0 30px hsl(217 91% 60% / 0.3),
+                 0 0 60px hsl(217 91% 60% / 0.15);
   }
 }
 
@@ -132,10 +132,10 @@ html {
   width: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: hsl(220 20% 4%);
+  background: hsl(210 40% 98%);
 }
 ::-webkit-scrollbar-thumb {
-  background: hsl(220 15% 20%);
+  background: hsl(214 32% 82%);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {

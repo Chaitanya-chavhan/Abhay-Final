@@ -15,12 +15,12 @@ const BrandSection = () => {
               y="50%"
               dominantBaseline="central"
               textAnchor="middle"
-              className="fill-transparent transition-all duration-700 group-hover:fill-primary/15"
+              className="fill-transparent transition-all duration-700 group-hover:fill-primary/10"
               style={{
-                fontFamily: "'Satoshi', sans-serif",
+                fontFamily: "'Space Grotesk', sans-serif",
                 fontSize: "130px",
-                fontWeight: 800,
-                stroke: "hsl(220 15% 20%)",
+                fontWeight: 700,
+                stroke: "hsl(214 32% 82%)",
                 strokeWidth: 0.8,
                 letterSpacing: "-0.02em",
                 filter: "drop-shadow(0 0 0px transparent)",
@@ -29,11 +29,11 @@ const BrandSection = () => {
               onMouseEnter={(e) => {
                 const el = e.currentTarget;
                 el.style.stroke = "hsl(217 91% 60%)";
-                el.style.filter = "drop-shadow(0 0 20px hsl(217 91% 60% / 0.5)) drop-shadow(0 0 60px hsl(217 91% 60% / 0.3))";
+                el.style.filter = "drop-shadow(0 0 20px hsl(217 91% 60% / 0.4)) drop-shadow(0 0 60px hsl(217 91% 60% / 0.2))";
               }}
               onMouseLeave={(e) => {
                 const el = e.currentTarget;
-                el.style.stroke = "hsl(220 15% 20%)";
+                el.style.stroke = "hsl(214 32% 82%)";
                 el.style.filter = "drop-shadow(0 0 0px transparent)";
               }}
             >

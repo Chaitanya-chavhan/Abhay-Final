@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Menu, X, User, LogOut, Package } from "lucide-react";
+import { Menu, X, User, LogOut, Package, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { user, signInWithGoogle, logout } = useAuth();
+  const { user, isAdmin, signInWithGoogle, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -38,7 +38,7 @@ const Navbar = () => {
     <nav
       className={`fixed top-4 left-1/2 z-50 -translate-x-1/2 transition-all duration-500 ${
         scrolled
-          ? "w-[95%] max-w-5xl rounded-2xl border border-border/60 bg-background/70 shadow-lg shadow-background/50 backdrop-blur-2xl"
+          ? "w-[95%] max-w-5xl rounded-2xl border border-border bg-card/80 shadow-lg shadow-foreground/5 backdrop-blur-2xl"
           : "w-[95%] max-w-6xl rounded-2xl border border-transparent bg-transparent backdrop-blur-none"
       }`}
     >
@@ -53,7 +53,7 @@ const Navbar = () => {
           </div>
         </Link>
 
-        <div className="hidden items-center gap-0.5 rounded-full border border-border/50 bg-card/60 px-1.5 py-1 backdrop-blur-sm md:flex">
+        <div className="hidden items-center gap-0.5 rounded-full border border-border bg-secondary/60 px-1.5 py-1 backdrop-blur-sm md:flex">
           {links.map((l) => (
             <button
               key={l.to}
@@ -72,13 +72,21 @@ const Navbar = () => {
         <div className="hidden items-center gap-3 md:flex">
           {user ? (
             <div className="flex items-center gap-2">
+              {isAdmin && (
+                <Link to="/admin" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+                  <Button variant="ghost" size="sm" className="gap-2 rounded-full text-primary hover:text-primary">
+                    <ShieldCheck className="h-4 w-4" />
+                    Admin
+                  </Button>
+                </Link>
+              )}
               <Link to="/dashboard" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
                 <Button variant="ghost" size="sm" className="gap-2 rounded-full text-muted-foreground hover:text-foreground">
                   <Package className="h-4 w-4" />
                   Dashboard
                 </Button>
               </Link>
-              <div className="flex items-center gap-2 rounded-full border border-border/50 bg-card/60 px-3 py-1.5">
+              <div className="flex items-center gap-2 rounded-full border border-border bg-secondary/60 px-3 py-1.5">
                 {avatarUrl ? (
                   <img src={avatarUrl} alt="" className="h-6 w-6 rounded-full" />
                 ) : (
@@ -107,7 +115,7 @@ const Navbar = () => {
 
       <div
         className={`overflow-hidden transition-all duration-300 md:hidden ${
-          open ? "max-h-96 border-t border-border/30" : "max-h-0"
+          open ? "max-h-96 border-t border-border" : "max-h-0"
         }`}
       >
         <div className="p-4 space-y-1">
@@ -116,7 +124,7 @@ const Navbar = () => {
               key={l.to}
               onClick={() => handleNavClick(l.to)}
               className={`block w-full text-left rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
-                isActive(l.to) ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-card"
+                isActive(l.to) ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"
               }`}
             >
               {l.label}
@@ -124,10 +132,15 @@ const Navbar = () => {
           ))}
           {user ? (
             <>
-              <button onClick={() => handleNavClick("/dashboard")} className="block w-full text-left rounded-xl px-4 py-3 text-sm text-muted-foreground hover:bg-card">
+              {isAdmin && (
+                <button onClick={() => handleNavClick("/admin")} className="block w-full text-left rounded-xl px-4 py-3 text-sm text-primary hover:bg-secondary">
+                  Admin Dashboard
+                </button>
+              )}
+              <button onClick={() => handleNavClick("/dashboard")} className="block w-full text-left rounded-xl px-4 py-3 text-sm text-muted-foreground hover:bg-secondary">
                 Dashboard
               </button>
-              <button onClick={() => { logout(); setOpen(false); }} className="w-full rounded-xl px-4 py-3 text-left text-sm text-destructive hover:bg-card">
+              <button onClick={() => { logout(); setOpen(false); }} className="w-full rounded-xl px-4 py-3 text-left text-sm text-destructive hover:bg-secondary">
                 Sign Out
               </button>
             </>

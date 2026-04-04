@@ -21,27 +21,17 @@ const HeroSection = () => {
 
   return (
     <section className="relative min-h-screen overflow-hidden bg-background">
-      {/* Grid pattern */}
       <div
-        className="absolute inset-0 opacity-[0.03]"
+        className="absolute inset-0 opacity-[0.04]"
         style={{
           backgroundImage:
-            "linear-gradient(hsl(215 15% 50%) 1px, transparent 1px), linear-gradient(90deg, hsl(215 15% 50%) 1px, transparent 1px)",
+            "linear-gradient(hsl(217 91% 60%) 1px, transparent 1px), linear-gradient(90deg, hsl(217 91% 60%) 1px, transparent 1px)",
           backgroundSize: "60px 60px",
         }}
       />
 
-      {/* Diagonal lines */}
-      <div className="absolute inset-0 overflow-hidden opacity-[0.02]">
-        <div className="absolute -left-20 top-0 h-full w-[1px] rotate-[25deg] bg-foreground" />
-        <div className="absolute left-1/4 top-0 h-full w-[1px] rotate-[25deg] bg-foreground" />
-        <div className="absolute left-1/2 top-0 h-full w-[1px] rotate-[25deg] bg-foreground" />
-        <div className="absolute left-3/4 top-0 h-full w-[1px] rotate-[25deg] bg-foreground" />
-      </div>
-
-      {/* Glow orbs - blue */}
-      <div className="absolute left-1/2 top-1/4 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-15 blur-[150px]" style={{ background: "hsl(217 91% 60%)" }} />
-      <div className="absolute right-0 top-3/4 h-[300px] w-[300px] rounded-full opacity-10 blur-[120px]" style={{ background: "hsl(199 89% 48%)" }} />
+      <div className="absolute left-1/2 top-1/4 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-10 blur-[150px]" style={{ background: "hsl(217 91% 60%)" }} />
+      <div className="absolute right-0 top-3/4 h-[300px] w-[300px] rounded-full opacity-8 blur-[120px]" style={{ background: "hsl(199 89% 48%)" }} />
 
       <div className="container relative mx-auto flex min-h-screen flex-col items-center justify-center px-4 text-center">
         <div className="mb-8 animate-fade-in">
@@ -66,7 +56,7 @@ const HeroSection = () => {
             At Unbeatable
             <span className="relative ml-3 inline-block">
               <span className="relative z-10">Prices!</span>
-              <span className="absolute -bottom-1 left-0 h-3 w-full rounded bg-primary/20" />
+              <span className="absolute -bottom-1 left-0 h-3 w-full rounded bg-primary/15" />
             </span>
           </span>
         </h1>
@@ -88,7 +78,7 @@ const HeroSection = () => {
           <Link
             to="/products"
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="group flex items-center gap-2 rounded-full bg-primary px-10 py-4 text-base font-semibold text-primary-foreground transition-all duration-300 hover:shadow-2xl hover:shadow-primary/30 hover:scale-105 active:scale-95"
+            className="group flex items-center gap-2 rounded-full bg-primary px-10 py-4 text-base font-semibold text-primary-foreground transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 hover:scale-105 active:scale-95"
           >
             Explore Products
             <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1.5" />
@@ -96,7 +86,7 @@ const HeroSection = () => {
           <Link
             to="/about"
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="rounded-full border border-border px-10 py-4 text-base font-medium text-foreground transition-all duration-300 hover:bg-card hover:border-primary/40"
+            className="rounded-full border border-border px-10 py-4 text-base font-medium text-foreground transition-all duration-300 hover:bg-secondary hover:border-primary/40"
           >
             Learn More
           </Link>
@@ -110,7 +100,7 @@ const HeroSection = () => {
           ].map((s) => (
             <div
               key={s.label}
-              className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card/30 p-6 backdrop-blur-sm transition-all duration-300 hover:border-primary/40 hover:bg-card/60"
+              className="group relative overflow-hidden rounded-2xl border border-border bg-card/80 p-6 backdrop-blur-sm transition-all duration-300 hover:border-primary/40 hover:shadow-lg"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
               <div className="relative">
