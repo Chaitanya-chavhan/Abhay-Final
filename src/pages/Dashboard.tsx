@@ -54,7 +54,6 @@ const Dashboard = () => {
       if (error || !data?.drive_link) {
         toast({ title: "Error", description: data?.error || "Unable to get access link.", variant: "destructive" });
       } else {
-        // Open in new tab
         window.open(data.drive_link, "_blank", "noopener,noreferrer");
       }
     } catch {
@@ -77,7 +76,7 @@ const Dashboard = () => {
   const displayName = user.user_metadata?.full_name || user.user_metadata?.name || user.email;
 
   return (
-    <div className="min-h-screen pt-24">
+    <div className="min-h-screen pt-24 bg-background">
       <div className="container mx-auto px-4 py-10">
         <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-border bg-card p-6 sm:flex-row sm:items-center">
           <div className="flex items-center gap-4">
@@ -105,7 +104,7 @@ const Dashboard = () => {
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>
         ) : purchases.length === 0 ? (
-          <div className="mt-6 rounded-2xl border border-dashed border-border bg-card/50 p-12 text-center">
+          <div className="mt-6 rounded-2xl border border-dashed border-border bg-card p-12 text-center">
             <Package className="mx-auto h-12 w-12 text-muted-foreground" />
             <h3 className="mt-4 font-heading text-lg font-semibold text-foreground">No products yet</h3>
             <p className="mt-2 text-sm text-muted-foreground">

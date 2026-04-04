@@ -52,7 +52,6 @@ const ProductDetail = () => {
     checkPurchase();
   }, [user, id]);
 
-  // Load Razorpay script
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
@@ -159,7 +158,7 @@ const ProductDetail = () => {
   };
 
   return (
-    <div className="min-h-screen pt-24">
+    <div className="min-h-screen pt-24 bg-background">
       <div className="container mx-auto px-4 py-10">
         <Link to="/products" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> Back to Products
@@ -170,8 +169,8 @@ const ProductDetail = () => {
             {product.image_url ? (
               <img src={product.image_url} alt={product.title} className="aspect-video w-full object-cover" />
             ) : (
-              <div className="flex aspect-video items-center justify-center bg-gradient-to-br from-primary/20 to-secondary">
-                <span className="font-heading text-6xl font-bold text-primary/40">{product.title.charAt(0)}</span>
+              <div className="flex aspect-video items-center justify-center bg-gradient-to-br from-primary/10 to-secondary">
+                <span className="font-heading text-6xl font-bold text-primary/30">{product.title.charAt(0)}</span>
               </div>
             )}
           </div>

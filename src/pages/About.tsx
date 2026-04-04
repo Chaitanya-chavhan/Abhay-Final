@@ -2,7 +2,7 @@ import { Shield, Users, Zap, Heart } from "lucide-react";
 
 const About = () => {
   return (
-    <div className="min-h-screen pt-24">
+    <div className="min-h-screen pt-24 bg-background">
       <div className="container mx-auto px-4 py-16">
         <div className="mx-auto max-w-3xl text-center">
           <span className="text-sm font-medium text-primary">ABOUT US</span>
@@ -10,7 +10,7 @@ const About = () => {
             Empowering <span className="text-gradient">Content Creators</span>
           </h1>
           <p className="mt-6 text-lg text-muted-foreground">
-            At Abhay Digital Product, we believe every creator deserves access to premium tools without 
+            At Abhay Digital Products, we believe every creator deserves access to premium tools without 
             burning a hole in their pocket. We curate and deliver high-quality digital products — from 
             HD video clips to editing elements and courses — all at prices starting from just ₹29.
           </p>
