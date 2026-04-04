@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_emails: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           amount: number
@@ -245,6 +263,7 @@ export type Database = {
     }
     Functions: {
       get_drive_link: { Args: { p_product_id: string }; Returns: string }
+      is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

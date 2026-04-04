@@ -24,7 +24,7 @@ const testimonials = [
 
 const TestimonialsSection = () => {
   return (
-    <section className="border-t border-border/50 bg-background py-24">
+    <section className="border-t border-border bg-background py-24">
       <div className="container mx-auto px-4">
         <ScrollReveal>
           <span className="mb-4 block text-center text-sm font-medium tracking-widest text-primary">TESTIMONIALS</span>
@@ -36,7 +36,7 @@ const TestimonialsSection = () => {
         <div className="mt-14 grid gap-6 md:grid-cols-3">
           {testimonials.map((t, i) => (
             <ScrollReveal key={t.name} delay={i * 0.12}>
-              <div className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card p-7 transition-all duration-500 hover:border-primary/30 hover:-translate-y-1">
+              <div className="group relative overflow-hidden rounded-2xl border border-border bg-card p-7 transition-all duration-500 hover:border-primary/30 hover:-translate-y-1 hover:shadow-lg">
                 <div className="absolute top-0 left-0 h-1 w-0 bg-primary transition-all duration-500 group-hover:w-full" />
                 <div className="flex gap-1">
                   {Array.from({ length: t.rating }).map((_, i) => (

@@ -12,7 +12,7 @@ const features = [
 
 const FeaturesSection = () => {
   return (
-    <section className="border-t border-border/50 bg-card/20 py-24">
+    <section className="border-t border-border bg-secondary/30 py-24">
       <div className="container mx-auto px-4">
         <ScrollReveal>
           <span className="mb-4 block text-center text-sm font-medium tracking-widest text-primary">WHY CHOOSE US</span>
@@ -24,7 +24,7 @@ const FeaturesSection = () => {
         <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((f, i) => (
             <ScrollReveal key={f.title} delay={i * 0.08}>
-              <div className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card p-7 transition-all duration-500 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1">
+              <div className="group relative overflow-hidden rounded-2xl border border-border bg-card p-7 transition-all duration-500 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                 <div className="relative">
                   <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-500 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110 group-hover:rotate-3">
