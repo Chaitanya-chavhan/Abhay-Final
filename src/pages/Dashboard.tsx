@@ -13,6 +13,13 @@ interface PurchasedProduct {
   created_at: string;
 }
 
+type PurchaseQueryRow = {
+  id: string;
+  product_id: string;
+  created_at: string;
+  products: { title: string } | null;
+};
+
 const Dashboard = () => {
   const { user, logout, loading } = useAuth();
   const { toast } = useToast();
@@ -31,7 +38,7 @@ const Dashboard = () => {
 
       if (data) {
         setPurchases(
-          data.map((p: any) => ({
+          (data as PurchaseQueryRow[]).map((p) => ({
             id: p.id,
             product_id: p.product_id,
             title: p.products?.title || "Unknown Product",

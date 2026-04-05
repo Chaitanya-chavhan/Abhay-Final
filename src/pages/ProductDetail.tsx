@@ -7,9 +7,19 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Product } from "@/lib/products";
 import { useEffect, useState } from "react";
 
+type RazorpayPaymentResponse = {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+};
+
+type RazorpayInstance = { open: () => void };
+
+type RazorpayConstructor = new (options: Record<string, unknown>) => RazorpayInstance;
+
 declare global {
   interface Window {
-    Razorpay: any;
+    Razorpay?: RazorpayConstructor;
   }
 }
 
@@ -57,7 +67,9 @@ const ProductDetail = () => {
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
     script.async = true;
     document.body.appendChild(script);
-    return () => { document.body.removeChild(script); };
+    return () => {
+      script.remove();
+    };
   }, []);
 
   if (loading) {
@@ -113,7 +125,7 @@ const ProductDetail = () => {
         name: "Abhay Digital Products",
         description: data.product_title,
         order_id: data.order_id,
-        handler: async (response: any) => {
+        handler: async (response: RazorpayPaymentResponse) => {
           try {
             const { data: verifyData, error: verifyError } = await supabase.functions.invoke("verify-razorpay-payment", {
               body: {

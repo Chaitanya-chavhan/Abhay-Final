@@ -296,6 +296,9 @@ const Admin = () => {
                     <div>
                       <label className="text-sm font-medium text-foreground">Google Drive Link (private)</label>
                       <Input value={editProduct.drive_link} onChange={(e) => setEditProduct({ ...editProduct, drive_link: e.target.value })} placeholder="https://drive.google.com/..." />
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Use https://drive.google.com/..., https://docs.google.com/..., or https://drive.usercontent.google.com/... (other URLs are rejected for buyers).
+                      </p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-foreground">Features (comma separated)</label>
@@ -376,7 +379,7 @@ const Admin = () => {
                 <TableBody>
                   {orders.map((o) => (
                     <TableRow key={o.id}>
-                      <TableCell className="font-medium">{(o.products as any)?.title || o.product_id.slice(0, 8)}</TableCell>
+                      <TableCell className="font-medium">{o.products?.title || o.product_id.slice(0, 8)}</TableCell>
                       <TableCell>₹{o.amount / 100}</TableCell>
                       <TableCell>
                         <span className={`rounded-full px-2 py-1 text-xs font-medium ${
@@ -409,7 +412,7 @@ const Admin = () => {
                 <TableBody>
                   {purchases.map((p) => (
                     <TableRow key={p.id}>
-                      <TableCell className="font-medium">{(p.products as any)?.title || p.product_id.slice(0, 8)}</TableCell>
+                      <TableCell className="font-medium">{p.products?.title || p.product_id.slice(0, 8)}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">{p.user_id.slice(0, 12)}...</TableCell>
                       <TableCell className="text-xs text-muted-foreground">{p.order_id?.slice(0, 12) || "—"}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">{new Date(p.created_at).toLocaleDateString("en-IN")}</TableCell>
