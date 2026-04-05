@@ -14,7 +14,7 @@ const ProductsShowcase = ({ showAll = false }: { showAll?: boolean }) => {
   useEffect(() => {
     const fetchProducts = async () => {
       const { data, error } = await supabase
-        .from("products")
+        .from("products_public")
         .select("id, title, description, price, original_price, category, image_url, features, tag, is_active, created_at, updated_at")
         .eq("is_active", true)
         .order("created_at", { ascending: false });
