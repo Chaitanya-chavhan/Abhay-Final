@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { invokeEdgeFunction } from "@/lib/supabase-edge-function";
 import type { Product } from "@/lib/products";
 import { useEffect, useState } from "react";
 
@@ -110,9 +111,14 @@ const ProductDetail = () => {
 
     setPurchasing(true);
     try {
-      const { data, error } = await supabase.functions.invoke("create-razorpay-order", {
-        body: { product_id: product.id },
-      });
+      const { data, error } = await invokeEdgeFunction<{
+        order_id?: string;
+        error?: string;
+        key_id?: string;
+        amount?: number;
+        currency?: string;
+        product_title?: string;
+      }>("create-razorpay-order", { product_id: product.id });
 
       if (error || !data?.order_id) {
         toast({ title: "Error", description: data?.error || "Failed to create order. Please try again.", variant: "destructive" });
@@ -129,13 +135,14 @@ const ProductDetail = () => {
         order_id: data.order_id,
         handler: async (response: RazorpayPaymentResponse) => {
           try {
-            const { data: verifyData, error: verifyError } = await supabase.functions.invoke("verify-razorpay-payment", {
-              body: {
+            const { data: verifyData, error: verifyError } = await invokeEdgeFunction<{ success?: boolean }>(
+              "verify-razorpay-payment",
+              {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
-              },
-            });
+              }
+            );
 
             if (verifyError || !verifyData?.success) {
               toast({ title: "Payment Failed", description: "Payment verification failed. Contact support.", variant: "destructive" });

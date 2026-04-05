@@ -4,6 +4,7 @@ import { Package, ExternalLink, LogOut, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { invokeEdgeFunction } from "@/lib/supabase-edge-function";
 import { useToast } from "@/hooks/use-toast";
 
 interface PurchasedProduct {
@@ -54,8 +55,8 @@ const Dashboard = () => {
   const handleAccessLink = async (productId: string) => {
     setAccessingLink(productId);
     try {
-      const { data, error } = await supabase.functions.invoke("get-drive-link", {
-        body: { product_id: productId },
+      const { data, error } = await invokeEdgeFunction<{ drive_link?: string; error?: string }>("get-drive-link", {
+        product_id: productId,
       });
 
       if (error || !data?.drive_link) {
