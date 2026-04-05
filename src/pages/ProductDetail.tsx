@@ -26,7 +26,7 @@ const ProductDetail = () => {
     const fetchProduct = async () => {
       if (!id) return;
       const { data } = await supabase
-        .from("products")
+        .from("products_public")
         .select("id, title, description, price, original_price, category, image_url, features, tag, is_active, created_at, updated_at")
         .eq("id", id)
         .eq("is_active", true)
