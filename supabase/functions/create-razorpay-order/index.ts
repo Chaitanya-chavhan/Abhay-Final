@@ -93,8 +93,17 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Create Razorpay order
-    const amountInPaise = product.price * 100;
+    // Create Razorpay order (amount must be integer paise; receipt max 40 chars per Razorpay API)
+    const amountInPaise = Math.round(Number(product.price) * 100);
+    if (!Number.isFinite(amountInPaise) || amountInPaise < 1) {
+      return new Response(
+        JSON.stringify({ error: "Invalid product price for payment" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const receipt = `r_${Date.now().toString(36)}_${crypto.randomUUID().slice(0, 8)}`.slice(0, 40);
+
     const razorpayRes = await fetch("https://api.razorpay.com/v1/orders", {
       method: "POST",
       headers: {
@@ -104,7 +113,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         amount: amountInPaise,
         currency: "INR",
-        receipt: `order_${product_id}_${Date.now()}`,
+        receipt,
         notes: {
           product_id,
           user_id: user.id,
@@ -117,9 +126,15 @@ Deno.serve(async (req) => {
 
     if (!razorpayRes.ok) {
       console.error("Razorpay error:", razorpayOrder);
+      const rzErr = razorpayOrder as { error?: { description?: string; code?: string }; description?: string };
+      const details =
+        rzErr?.error?.description ||
+        rzErr?.description ||
+        rzErr?.error?.code ||
+        "Razorpay rejected the order (check keys and test/live mode).";
       return new Response(
-        JSON.stringify({ error: "Failed to create order" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "Failed to create order", details }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 

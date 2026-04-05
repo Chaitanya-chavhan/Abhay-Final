@@ -60,7 +60,11 @@ const Dashboard = () => {
       });
 
       if (error || !data?.drive_link) {
-        toast({ title: "Error", description: data?.error || "Unable to get access link.", variant: "destructive" });
+        toast({
+          title: "Error",
+          description: data?.error || error?.message || "Unable to get access link.",
+          variant: "destructive",
+        });
       } else {
         window.open(data.drive_link, "_blank", "noopener,noreferrer");
       }

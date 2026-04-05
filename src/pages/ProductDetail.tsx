@@ -121,7 +121,12 @@ const ProductDetail = () => {
       }>("create-razorpay-order", { product_id: product.id });
 
       if (error || !data?.order_id) {
-        toast({ title: "Error", description: data?.error || "Failed to create order. Please try again.", variant: "destructive" });
+        const detail =
+          data?.error ||
+          (data as { details?: string } | undefined)?.details ||
+          error?.message ||
+          "Failed to create order. Please try again.";
+        toast({ title: "Error", description: detail, variant: "destructive" });
         setPurchasing(false);
         return;
       }
@@ -145,7 +150,14 @@ const ProductDetail = () => {
             );
 
             if (verifyError || !verifyData?.success) {
-              toast({ title: "Payment Failed", description: "Payment verification failed. Contact support.", variant: "destructive" });
+              toast({
+                title: "Payment Failed",
+                description:
+                  (verifyData as { error?: string } | undefined)?.error ||
+                  verifyError?.message ||
+                  "Payment verification failed. Contact support.",
+                variant: "destructive",
+              });
             } else {
               setPurchased(true);
               toast({ title: "Payment Successful! 🎉", description: "Your product is now available in your dashboard." });
