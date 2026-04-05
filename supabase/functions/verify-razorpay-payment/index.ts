@@ -1,6 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-import { crypto } from "https://deno.land/std@0.168.0/crypto/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,21 +7,21 @@ const corsHeaders = {
 
 async function verifySignature(orderId: string, paymentId: string, signature: string, secret: string): Promise<boolean> {
   const enc = new TextEncoder();
-  const key = await crypto.subtle.importKey(
+  const key = await globalThis.crypto.subtle.importKey(
     "raw",
     enc.encode(secret),
     { name: "HMAC", hash: "SHA-256" },
     false,
     ["sign"]
   );
-  const signed = await crypto.subtle.sign("HMAC", key, enc.encode(`${orderId}|${paymentId}`));
+  const signed = await globalThis.crypto.subtle.sign("HMAC", key, enc.encode(`${orderId}|${paymentId}`));
   const expectedSignature = Array.from(new Uint8Array(signed))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
   return expectedSignature === signature;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -59,7 +57,21 @@ serve(async (req) => {
       );
     }
 
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = await req.json();
+    let payload: {
+      razorpay_order_id?: string;
+      razorpay_payment_id?: string;
+      razorpay_signature?: string;
+    };
+    try {
+      payload = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON body" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = payload;
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       return new Response(
@@ -114,8 +126,8 @@ serve(async (req) => {
 
     if (purchaseError) {
       console.error("Purchase insert error:", purchaseError);
-      // If unique constraint, it's ok - already purchased
-      if (!purchaseError.message.includes("duplicate")) {
+      // Unique (user_id, product_id) — payment verified but purchase already exists
+      if (purchaseError.code !== "23505") {
         return new Response(
           JSON.stringify({ error: "Failed to create purchase" }),
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }

@@ -12,9 +12,20 @@ dist
 dist-ssr
 *.local
 
+# Secrets (never commit)
+.env
+.env.*
+!.env.example
+supabase/.env
+supabase/.env.*
+
+# Local MCP / deploy scratch (do not commit)
+.deploy-*.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
 .idea
 .DS_Store
 *.suo

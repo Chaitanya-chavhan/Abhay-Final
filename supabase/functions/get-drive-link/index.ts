@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
@@ -6,7 +5,32 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-serve(async (req) => {
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+const ALLOWED_DRIVE_HOSTS = new Set([
+  "drive.google.com",
+  "docs.google.com",
+  "drive.usercontent.google.com",
+]);
+
+function isValidProductId(id: string): boolean {
+  return typeof id === "string" && UUID_RE.test(id.trim());
+}
+
+function isAllowedDriveUrl(raw: string): boolean {
+  const trimmed = raw.trim();
+  if (!trimmed.startsWith("https://")) return false;
+  try {
+    const u = new URL(trimmed);
+    if (u.protocol !== "https:") return false;
+    return ALLOWED_DRIVE_HOSTS.has(u.hostname.toLowerCase());
+  } catch {
+    return false;
+  }
+}
+
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -34,15 +58,24 @@ serve(async (req) => {
       );
     }
 
-    const { product_id } = await req.json();
-    if (!product_id) {
+    let body: { product_id?: string };
+    try {
+      body = await req.json();
+    } catch {
       return new Response(
-        JSON.stringify({ error: "product_id required" }),
+        JSON.stringify({ error: "Invalid JSON body" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Check purchase
+    const product_id = body.product_id?.trim();
+    if (!product_id || !isValidProductId(product_id)) {
+      return new Response(
+        JSON.stringify({ error: "Valid product_id (UUID) required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const { data: purchase } = await supabase
       .from("purchases")
       .select("id")
@@ -57,22 +90,40 @@ serve(async (req) => {
       );
     }
 
-    // Get drive link
-    const { data: product } = await supabase
+    const { data: product, error: productError } = await supabase
       .from("products")
       .select("drive_link, title")
       .eq("id", product_id)
       .single();
 
-    if (!product || !product.drive_link) {
+    if (productError || !product?.drive_link) {
       return new Response(
         JSON.stringify({ error: "Drive link not available" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
+    if (!isAllowedDriveUrl(product.drive_link)) {
+      console.error("Rejected drive_link host for product", product_id);
+      return new Response(
+        JSON.stringify({
+          error:
+            "Drive link is not an allowed Google Drive URL. Use https://drive.google.com/... or https://docs.google.com/...",
+        }),
+        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const { error: logError } = await supabase.from("drive_link_access_logs").insert({
+      user_id: user.id,
+      product_id,
+    });
+    if (logError) {
+      console.warn("drive_link_access_logs insert skipped:", logError.message);
+    }
+
     return new Response(
-      JSON.stringify({ drive_link: product.drive_link, title: product.title }),
+      JSON.stringify({ drive_link: product.drive_link.trim(), title: product.title }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
