@@ -1,3 +1,6 @@
+# Cursor (local)
+.cursor/
+
 # Logs
 logs
 *.log
@@ -21,6 +24,9 @@ supabase/.env.*
 
 # Local MCP / deploy scratch (do not commit)
 .deploy-*.json
+
+# Supabase CLI cache
+supabase/.temp/
 
 # Editor directories and files
 .vscode/*
