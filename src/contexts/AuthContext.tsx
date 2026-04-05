@@ -1,6 +1,9 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { GoogleAuthProvider, signInWithPopup, signOut as firebaseSignOut } from "firebase/auth";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { getFirebaseAuth, isFirebaseConfigured } from "@/lib/firebase";
+import { useToast } from "@/hooks/use-toast";
 
 interface AuthContextType {
   user: User | null;
@@ -20,6 +23,7 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -62,15 +66,64 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signInWithGoogle = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: window.location.origin,
-      },
-    });
+    if (!isFirebaseConfigured()) {
+      toast({
+        title: "Sign-in unavailable",
+        description: "Firebase is not configured. Add VITE_FIREBASE_* keys to your environment.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const auth = getFirebaseAuth();
+    if (!auth) {
+      toast({ title: "Sign-in failed", description: "Could not start Firebase Auth.", variant: "destructive" });
+      return;
+    }
+
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
+    provider.addScope("email");
+    provider.addScope("profile");
+
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const idToken = credential?.idToken;
+      if (!idToken) {
+        await firebaseSignOut(auth);
+        toast({ title: "Sign-in failed", description: "No Google ID token returned.", variant: "destructive" });
+        return;
+      }
+
+      const { error } = await supabase.auth.signInWithIdToken({
+        provider: "google",
+        token: idToken,
+      });
+
+      await firebaseSignOut(auth);
+
+      if (error) {
+        toast({
+          title: "Sign-in failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+    } catch (e) {
+      const authInstance = getFirebaseAuth();
+      if (authInstance) await firebaseSignOut(authInstance).catch(() => {});
+      const message = e instanceof Error ? e.message : "Sign-in was cancelled or blocked.";
+      if (!message.includes("auth/popup-closed-by-user") && !message.includes("auth/cancelled-popup-request")) {
+        toast({ title: "Sign-in failed", description: message, variant: "destructive" });
+      }
+    }
   };
 
   const logout = async () => {
+    const auth = getFirebaseAuth();
+    if (auth) await firebaseSignOut(auth).catch(() => {});
     await supabase.auth.signOut();
     setIsAdmin(false);
   };
