@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Check, ShieldCheck, Clock, Download } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,8 @@ declare global {
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const { user, session, signInWithGoogle } = useAuth();
+  const navigate = useNavigate();
+  const { user, session } = useAuth();
   const { toast } = useToast();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -97,7 +98,8 @@ const ProductDetail = () => {
 
   const handleBuy = async () => {
     if (!user || !session) {
-      signInWithGoogle();
+      const path = id ? `/product/${id}` : "/products";
+      navigate(`/auth?redirect=${encodeURIComponent(path)}`);
       return;
     }
 

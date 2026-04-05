@@ -1,8 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { GoogleAuthProvider, signInWithPopup, signOut as firebaseSignOut } from "firebase/auth";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { getFirebaseAuth, isFirebaseConfigured } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 
 interface AuthContextType {
@@ -10,7 +8,10 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   isAdmin: boolean;
-  signInWithGoogle: () => Promise<void>;
+  signInWithEmail: (email: string, password: string) => Promise<boolean>;
+  signUpWithEmail: (email: string, password: string) => Promise<boolean>;
+  requestPasswordReset: (email: string) => Promise<boolean>;
+  updatePassword: (newPassword: string) => Promise<boolean>;
   logout: () => Promise<void>;
 }
 
@@ -30,7 +31,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   const checkAdmin = async (userEmail: string | undefined) => {
-    if (!userEmail) { setIsAdmin(false); return; }
+    if (!userEmail) {
+      setIsAdmin(false);
+      return;
+    }
     const { data } = await supabase
       .from("admin_emails")
       .select("id")
@@ -40,18 +44,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-        if (session?.user) {
-          setTimeout(() => checkAdmin(session.user.email), 0);
-        } else {
-          setIsAdmin(false);
-        }
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+      if (session?.user) {
+        setTimeout(() => checkAdmin(session.user.email), 0);
+      } else {
+        setIsAdmin(false);
       }
-    );
+    });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -65,71 +69,102 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signInWithGoogle = async () => {
-    if (!isFirebaseConfigured()) {
+  const signInWithEmail = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+    if (error) {
       toast({
-        title: "Sign-in unavailable",
-        description: "Firebase is not configured. Add VITE_FIREBASE_* keys to your environment.",
+        title: "Sign-in failed",
+        description: error.message,
         variant: "destructive",
       });
-      return;
+      return false;
     }
+    return true;
+  };
 
-    const auth = getFirebaseAuth();
-    if (!auth) {
-      toast({ title: "Sign-in failed", description: "Could not start Firebase Auth.", variant: "destructive" });
-      return;
-    }
-
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: "select_account" });
-    provider.addScope("email");
-    provider.addScope("profile");
-
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const credential = GoogleAuthProvider.credentialFromResult(result);
-      const idToken = credential?.idToken;
-      if (!idToken) {
-        await firebaseSignOut(auth);
-        toast({ title: "Sign-in failed", description: "No Google ID token returned.", variant: "destructive" });
-        return;
-      }
-
-      const { error } = await supabase.auth.signInWithIdToken({
-        provider: "google",
-        token: idToken,
+  const signUpWithEmail = async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: { emailRedirectTo: `${window.location.origin}/auth` },
+    });
+    if (error) {
+      toast({
+        title: "Sign-up failed",
+        description: error.message,
+        variant: "destructive",
       });
-
-      await firebaseSignOut(auth);
-
-      if (error) {
-        toast({
-          title: "Sign-in failed",
-          description: error.message,
-          variant: "destructive",
-        });
-        return;
-      }
-    } catch (e) {
-      const authInstance = getFirebaseAuth();
-      if (authInstance) await firebaseSignOut(authInstance).catch(() => {});
-      const message = e instanceof Error ? e.message : "Sign-in was cancelled or blocked.";
-      if (!message.includes("auth/popup-closed-by-user") && !message.includes("auth/cancelled-popup-request")) {
-        toast({ title: "Sign-in failed", description: message, variant: "destructive" });
-      }
+      return false;
     }
+    if (data.user && !data.session) {
+      toast({
+        title: "Confirm your email",
+        description: "We sent a link to your inbox. Open it to activate your account.",
+      });
+      return true;
+    }
+    toast({ title: "Welcome!", description: "Your account is ready." });
+    return true;
+  };
+
+  const requestPasswordReset = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/auth?type=recovery`,
+    });
+    if (error) {
+      toast({
+        title: "Request failed",
+        description: error.message,
+        variant: "destructive",
+      });
+      return false;
+    }
+    toast({
+      title: "Check your email",
+      description: "We sent a password reset link if that address is registered.",
+    });
+    return true;
+  };
+
+  const updatePassword = async (newPassword: string) => {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) {
+      toast({
+        title: "Update failed",
+        description: error.message,
+        variant: "destructive",
+      });
+      return false;
+    }
+    toast({
+      title: "Password updated",
+      description: "You can continue with your new password.",
+    });
+    return true;
   };
 
   const logout = async () => {
-    const auth = getFirebaseAuth();
-    if (auth) await firebaseSignOut(auth).catch(() => {});
     await supabase.auth.signOut();
     setIsAdmin(false);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isAdmin, signInWithGoogle, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        loading,
+        isAdmin,
+        signInWithEmail,
+        signUpWithEmail,
+        requestPasswordReset,
+        updatePassword,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

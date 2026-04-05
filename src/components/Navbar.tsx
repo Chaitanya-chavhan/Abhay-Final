@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { user, isAdmin, signInWithGoogle, logout } = useAuth();
+  const { user, isAdmin, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -114,12 +114,13 @@ const Navbar = () => {
                 </Button>
               </div>
             ) : (
-              <button
-                onClick={signInWithGoogle}
-                className="rounded-full bg-primary px-6 py-2 text-sm font-semibold text-primary-foreground transition-all duration-300 hover:shadow-lg hover:shadow-primary/30 hover:scale-105 active:scale-95"
+              <Link
+                to="/auth"
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                className="inline-flex rounded-full bg-primary px-6 py-2 text-sm font-semibold text-primary-foreground transition-all duration-300 hover:shadow-lg hover:shadow-primary/30 hover:scale-105 active:scale-95"
               >
                 Sign In
-              </button>
+              </Link>
             )}
           </div>
 
@@ -195,9 +196,13 @@ const Navbar = () => {
             </div>
           ) : (
             <div className="mt-auto">
-              <button onClick={() => { signInWithGoogle(); setOpen(false); }} className="w-full rounded-xl bg-primary px-4 py-3.5 text-sm font-semibold text-primary-foreground">
-                Sign In with Google
-              </button>
+              <Link
+                to="/auth"
+                onClick={() => setOpen(false)}
+                className="flex w-full items-center justify-center rounded-xl bg-primary px-4 py-3.5 text-sm font-semibold text-primary-foreground"
+              >
+                Sign In
+              </Link>
             </div>
           )}
         </div>

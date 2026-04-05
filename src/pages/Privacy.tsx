@@ -7,7 +7,7 @@ const Privacy = () => (
       <div className="mt-10 space-y-8 text-sm leading-relaxed text-muted-foreground">
         <section>
           <h2 className="font-heading text-lg font-semibold text-foreground">1. Information We Collect</h2>
-          <p className="mt-2">We collect information you provide when signing in with Google, including your name, email address, and profile picture. We also collect payment information processed securely by Razorpay.</p>
+          <p className="mt-2">We collect information you provide when creating an account, including your email address. We also collect payment information processed securely by Razorpay.</p>
         </section>
 
         <section>
@@ -27,7 +27,7 @@ const Privacy = () => (
 
         <section>
           <h2 className="font-heading text-lg font-semibold text-foreground">4. Third-Party Services</h2>
-          <p className="mt-2">We use the following third-party services: Google (authentication), Razorpay (payments), Supabase (data storage), and Google Drive (product delivery). Each service has its own privacy policy.</p>
+          <p className="mt-2">We use the following third-party services: Supabase (authentication and data storage), Razorpay (payments), and Google Drive (product delivery). Each service has its own privacy policy.</p>
         </section>
 
         <section>
