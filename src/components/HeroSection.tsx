@@ -22,7 +22,7 @@ const HeroSection = () => {
   return (
     <section className="relative min-h-screen overflow-hidden bg-background">
       <div
-        className="absolute inset-0 opacity-[0.03]"
+        className="absolute inset-0 opacity-[0.015]"
         style={{
           backgroundImage:
             "linear-gradient(hsl(217 91% 60%) 1px, transparent 1px), linear-gradient(90deg, hsl(217 91% 60%) 1px, transparent 1px)",
@@ -30,8 +30,8 @@ const HeroSection = () => {
         }}
       />
 
-      <div className="absolute left-1/2 top-1/4 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-8 blur-[150px]" style={{ background: "hsl(217 91% 60%)" }} />
-      <div className="absolute right-0 top-3/4 h-[250px] w-[250px] rounded-full opacity-6 blur-[120px]" style={{ background: "hsl(199 89% 48%)" }} />
+      <div className="absolute left-1/2 top-1/4 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[180px]" style={{ background: "hsl(217 91% 60% / 0.04)" }} />
+      <div className="absolute right-0 top-3/4 h-[250px] w-[250px] rounded-full blur-[140px]" style={{ background: "hsl(199 89% 48% / 0.03)" }} />
 
       <div className="container relative mx-auto flex min-h-screen flex-col items-center justify-center px-4 pt-16 text-center">
         <div className="mb-6 animate-fade-in">
