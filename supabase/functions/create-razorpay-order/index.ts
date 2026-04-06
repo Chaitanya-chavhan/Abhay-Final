@@ -5,6 +5,14 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+/** Razorpay Orders API: `receipt` max length 40. */
+const MAX_RECEIPT_LEN = 40;
+
+function truncateReceipt(receipt: string): string {
+  const t = receipt.trim();
+  return t.length <= MAX_RECEIPT_LEN ? t : t.slice(0, MAX_RECEIPT_LEN);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -51,39 +59,43 @@ Deno.serve(async (req) => {
       });
     }
 
-    const amountRaw = body.amount;
-    const currency = typeof body.currency === "string" && body.currency.trim()
-      ? body.currency.trim().toUpperCase()
-      : "INR";
-    const receipt =
-      typeof body.receipt === "string" && body.receipt.trim()
-        ? body.receipt.trim()
-        : `rcpt_${user.id.slice(0, 8)}_${Date.now()}`;
-    const productId = typeof body.product_id === "string" ? body.product_id : undefined;
+    const amount = body.amount;
+    const currencyRaw = body.currency;
+    const receiptRaw = body.receipt;
+    const productId = body.product_id;
 
-    if (amountRaw === undefined || amountRaw === null) {
-      throw new Error("amount is required");
-    }
-
-    const amountNum = Number(amountRaw);
-    if (Number.isNaN(amountNum) || amountNum <= 0) {
+    const parsedAmount = Number(amount);
+    if (!parsedAmount || isNaN(parsedAmount) || parsedAmount <= 0) {
       throw new Error("amount must be a positive number");
     }
 
-    const amountRupees = Math.round(amountNum);
-    const amountPaise = Math.round(amountNum * 100);
+    const currency =
+      typeof currencyRaw === "string" && currencyRaw.trim()
+        ? currencyRaw.trim().toUpperCase()
+        : "INR";
 
-    if (!productId) {
+    let receipt: string;
+    if (typeof receiptRaw === "string" && receiptRaw.trim()) {
+      receipt = truncateReceipt(receiptRaw);
+    } else {
+      receipt = truncateReceipt(`rcpt_${user.id.replace(/-/g, "").slice(0, 12)}_${Date.now()}`);
+    }
+
+    const productIdStr = typeof productId === "string" ? productId : undefined;
+    if (!productIdStr) {
       return new Response(JSON.stringify({ error: "product_id is required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    const amountInPaise = Math.round(parsedAmount * 100);
+    const amountRupees = Math.round(parsedAmount);
+
     const { data: product, error: productError } = await supabase
       .from("products")
       .select("id, title, price, is_active")
-      .eq("id", productId)
+      .eq("id", productIdStr)
       .single();
 
     if (productError || !product?.is_active) {
@@ -93,11 +105,18 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (product.price !== amountRupees) {
-      return new Response(JSON.stringify({ error: "Amount does not match product price" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const catalogPriceRupees = Math.round(Number(product.price));
+    if (catalogPriceRupees !== amountRupees) {
+      return new Response(
+        JSON.stringify({
+          error: "Amount does not match product price",
+          details: `Expected ₹${catalogPriceRupees}, received ₹${amountRupees}`,
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     const basic = btoa(`${razorpayKeyId}:${razorpayKeySecret}`);
@@ -108,29 +127,77 @@ Deno.serve(async (req) => {
         Authorization: `Basic ${basic}`,
       },
       body: JSON.stringify({
-        amount: amountPaise,
+        amount: amountInPaise,
         currency,
         receipt,
       }),
     });
 
-    const rzJson = (await rzRes.json()) as {
-      id?: string;
-      error?: { description?: string; code?: string };
-    };
+    let rzJson: Record<string, unknown>;
+    try {
+      rzJson = await rzRes.json() as Record<string, unknown>;
+    } catch {
+      return new Response(
+        JSON.stringify({
+          error: "Razorpay order failed",
+          details: "Invalid or empty response from Razorpay",
+          status_code: rzRes.status,
+        }),
+        {
+          status: 502,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
 
-    if (!rzRes.ok || !rzJson.id) {
-      const detail = rzJson.error?.description ?? "Failed to create Razorpay order";
-      return new Response(JSON.stringify({ error: "Razorpay order failed", details: detail }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (!rzRes.ok) {
+      const err = rzJson.error as Record<string, unknown> | undefined;
+      const description =
+        typeof err?.description === "string"
+          ? err.description
+          : typeof rzJson.message === "string"
+          ? rzJson.message as string
+          : JSON.stringify(rzJson);
+      return new Response(
+        JSON.stringify({
+          error: "Razorpay order failed",
+          details: description,
+          razorpay_error: {
+            description: err?.description ?? null,
+            code: err?.code ?? null,
+            source: err?.source ?? null,
+            step: err?.step ?? null,
+            reason: err?.reason ?? null,
+            field: err?.field ?? null,
+          },
+          http_status: rzRes.status,
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    const orderId = rzJson.id as string | undefined;
+    if (!orderId) {
+      return new Response(
+        JSON.stringify({
+          error: "Razorpay order failed",
+          details: "Missing order id in Razorpay response",
+          razorpay_response: rzJson,
+        }),
+        {
+          status: 502,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     const { error: insertError } = await supabase.from("orders").insert({
       user_id: user.id,
-      product_id: productId,
-      razorpay_order_id: rzJson.id,
+      product_id: productIdStr,
+      razorpay_order_id: orderId,
       amount: amountRupees,
       currency,
       status: "created",
@@ -138,7 +205,7 @@ Deno.serve(async (req) => {
 
     if (insertError) {
       console.error("Order insert error:", insertError);
-      return new Response(JSON.stringify({ error: "Failed to save order" }), {
+      return new Response(JSON.stringify({ error: "Failed to save order", details: insertError.message }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -146,9 +213,9 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        order_id: rzJson.id,
+        order_id: orderId,
         key_id: razorpayKeyId,
-        amount: amountPaise,
+        amount: amountInPaise,
         currency,
         product_title: product.title,
       }),

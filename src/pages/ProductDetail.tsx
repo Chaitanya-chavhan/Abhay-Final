@@ -146,8 +146,10 @@ const ProductDetail = () => {
         currency?: string;
         product_title?: string;
       }>("create-razorpay-order", {
-        amount: product.price,
         product_id: product.id,
+        amount: product.price,
+        currency: "INR",
+        receipt: `rcpt_${String(product.id).replace(/-/g, "").slice(0, 12)}`,
       });
 
       if (error || !data?.order_id) {
