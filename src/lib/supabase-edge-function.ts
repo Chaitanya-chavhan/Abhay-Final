@@ -1,20 +1,45 @@
 import { supabase } from "@/integrations/supabase/client";
+import { FunctionsHttpError } from "@supabase/supabase-js";
 
 const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.replace(/\/+$/, "") ?? "";
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
 
+type EdgeErrBody = {
+  message?: string;
+  error?: string;
+  details?: string;
+  razorpay_error?: { description?: string | null };
+};
+
+function formatEdgeErrorBody(o: EdgeErrBody | null, status: number, rawText: string): string {
+  const rz = o?.razorpay_error?.description;
+  const parts = [o?.details, rz, o?.message, o?.error].filter(
+    (x): x is string => typeof x === "string" && x.length > 0,
+  );
+  if (parts.length) return parts[0];
+  const short = rawText.trim().slice(0, 200);
+  if (short && !short.startsWith("{")) {
+    return `Server returned non-JSON (${status}). Check VITE_SUPABASE_URL and that the Edge Function is deployed.`;
+  }
+  return `Request failed (${status})`;
+}
+
+function clarifyJwtMessage(msg: string): string {
+  const m = msg.toLowerCase();
+  if (m.includes("invalid jwt") || m.includes("jwt")) {
+    return `${msg} — Try signing out and signing in again. Also confirm VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY are from the same Supabase project.`;
+  }
+  return msg;
+}
+
 /**
- * Calls Edge Functions with a plain fetch so Supabase's gateway always receives:
- * - `Authorization: Bearer <user_jwt>`
- * - `apikey: <anon_key>`
- *
- * The shared `fetchWithAuth` + FunctionsClient merge can still satisfy this, but
- * hitting the gateway directly avoids edge cases where a 401 is returned with
- * `{ "message": "Missing authorization header" }` before your function runs.
+ * Invokes Edge Functions with a valid session JWT. Validates the user with the
+ * auth server, refreshes tokens when they are close to expiry, then uses the
+ * Supabase client `functions.invoke` so Authorization + apikey match the SDK.
  */
 export async function invokeEdgeFunction<T = unknown>(
   name: string,
-  body?: Record<string, unknown>
+  body?: Record<string, unknown>,
 ): Promise<{ data: T | null; error: Error | null }> {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     return { data: null, error: new Error("Supabase URL or anon key is not configured") };
@@ -29,78 +54,69 @@ export async function invokeEdgeFunction<T = unknown>(
     return { data: null, error: new Error(sessionError?.message ?? "Not authenticated") };
   }
 
-  let accessToken = session.access_token;
   const now = Math.floor(Date.now() / 1000);
   const expiresAt = session.expires_at ?? 0;
-  if (expiresAt - now < 120) {
+  // Refresh first when expired or close to expiry — getUser() and the Edge gateway reject stale JWTs.
+  if (expiresAt <= now + 600) {
     const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
-    if (!refreshError && refreshed.session?.access_token) {
-      accessToken = refreshed.session.access_token;
+    if (refreshError || !refreshed.session?.access_token) {
+      return {
+        data: null,
+        error: new Error(
+          refreshError
+            ? clarifyJwtMessage(refreshError.message)
+            : "Session expired. Please sign out, sign in again, then retry.",
+        ),
+      };
     }
   }
 
-  const url = `${SUPABASE_URL}/functions/v1/${encodeURIComponent(name)}`;
-
-  try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-        apikey: SUPABASE_ANON_KEY,
-      },
-      body: JSON.stringify(body ?? {}),
-    });
-
-    const raw = await res.text();
-    let parsed: unknown = null;
-    if (raw) {
-      try {
-        parsed = JSON.parse(raw);
-      } catch {
-        parsed = null;
-      }
-    }
-
-    type EdgeErr = {
-      message?: string;
-      error?: string;
-      details?: string;
-      razorpay_error?: { description?: string | null };
+  const { error: userError } = await supabase.auth.getUser();
+  if (userError) {
+    return {
+      data: null,
+      error: new Error(clarifyJwtMessage(userError.message ?? "Session invalid. Please sign in again.")),
     };
+  }
 
-    function formatEdgeErrorBody(o: EdgeErr | null, status: number, rawText: string): string {
-      const rz = o?.razorpay_error?.description;
-      const parts = [o?.details, rz, o?.message, o?.error].filter(
-        (x): x is string => typeof x === "string" && x.length > 0,
-      );
-      if (parts.length) return parts[0];
-      const short = rawText.trim().slice(0, 200);
-      if (short && !short.startsWith("{")) {
-        return `Server returned non-JSON (${status}). Check VITE_SUPABASE_URL and that the Edge Function is deployed.`;
+  const { data, error } = await supabase.functions.invoke(name, {
+    body: body ?? {},
+  });
+
+  if (error) {
+    if (error instanceof FunctionsHttpError) {
+      const res = error.context as Response;
+      let raw = "";
+      try {
+        raw = await res.text();
+      } catch {
+        raw = "";
       }
-      return `Request failed (${status})`;
-    }
-
-    if (!res.ok) {
-      const o = (parsed && typeof parsed === "object" ? parsed : null) as EdgeErr | null;
-      const detail = formatEdgeErrorBody(o, res.status, raw);
+      let parsed: unknown = null;
+      if (raw) {
+        try {
+          parsed = JSON.parse(raw);
+        } catch {
+          parsed = null;
+        }
+      }
+      const o = (parsed && typeof parsed === "object" ? parsed : null) as EdgeErrBody | null;
+      const detail = clarifyJwtMessage(formatEdgeErrorBody(o, res.status, raw));
       return { data: (parsed as T) ?? null, error: new Error(detail) };
     }
 
-    // 200 OK but missing/invalid JSON (e.g. HTML from wrong URL, or empty body)
-    if (parsed === null || typeof parsed !== "object") {
-      const preview = raw.trim().slice(0, 120).replace(/\s+/g, " ");
-      const hint =
-        preview && !preview.startsWith("{")
-          ? `The app expected JSON from create-razorpay-order but got something else (preview: "${preview}"). Usually this means VITE_SUPABASE_URL is wrong or the function is not deployed.`
-          : "Empty response from create-razorpay-order. Deploy the Edge Function in Supabase and confirm the project URL.";
-      return { data: null, error: new Error(hint) };
-    }
-
-    return { data: parsed as T, error: null };
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "Network error";
-    return { data: null, error: new Error(message) };
+    const msg = error instanceof Error ? error.message : String(error);
+    return { data: null, error: new Error(clarifyJwtMessage(msg)) };
   }
+
+  if (data === null || typeof data !== "object") {
+    return {
+      data: null,
+      error: new Error(
+        "Empty or invalid JSON from Edge Function. Confirm create-razorpay-order is deployed and returns JSON.",
+      ),
+    };
+  }
+
+  return { data: data as T, error: null };
 }
