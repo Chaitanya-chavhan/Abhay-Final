@@ -53,6 +53,22 @@ type RazorpayPaymentResponse = {
   razorpay_signature: string;
 };
 
+type CreateOrderErrorPayload = {
+  error?: string;
+  details?: string;
+  razorpay_error?: { description?: string | null };
+};
+
+function describeCreateOrderFailure(data: CreateOrderErrorPayload | null, err: Error | null): string {
+  const fromApi =
+    (data?.details && String(data.details)) ||
+    (data?.razorpay_error?.description && String(data.razorpay_error.description)) ||
+    (data?.error && String(data.error));
+  if (fromApi) return fromApi;
+  if (err?.message) return err.message;
+  return "Failed to create order. Please try again.";
+}
+
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -138,27 +154,39 @@ const ProductDetail = () => {
     }
 
     try {
+      const amountRupees = Math.round(Number(product.price));
+      if (!Number.isFinite(amountRupees) || amountRupees <= 0) {
+        toast({
+          title: "Error",
+          description: "This product has an invalid price. Contact support.",
+          variant: "destructive",
+        });
+        setPurchasing(false);
+        return;
+      }
+
       const { data, error } = await invokeEdgeFunction<{
         order_id?: string;
         error?: string;
+        details?: string;
         key_id?: string;
         amount?: number;
         currency?: string;
         product_title?: string;
+        razorpay_error?: { description?: string | null };
       }>("create-razorpay-order", {
-        product_id: product.id,
-        amount: product.price,
+        product_id: String(product.id),
+        amount: amountRupees,
         currency: "INR",
         receipt: `rcpt_${String(product.id).replace(/-/g, "").slice(0, 12)}`,
       });
 
       if (error || !data?.order_id) {
-        const detail =
-          (data as { details?: string } | undefined)?.details ||
-          data?.error ||
-          error?.message ||
-          "Failed to create order. Please try again.";
-        toast({ title: "Error", description: detail, variant: "destructive" });
+        const detail = describeCreateOrderFailure((data as CreateOrderErrorPayload) ?? null, error);
+        if (import.meta.env.DEV) {
+          console.error("[create-razorpay-order]", { data, error: error?.message });
+        }
+        toast({ title: "Payment setup failed", description: detail, variant: "destructive" });
         setPurchasing(false);
         return;
       }

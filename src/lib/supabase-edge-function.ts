@@ -62,16 +62,40 @@ export async function invokeEdgeFunction<T = unknown>(
       }
     }
 
+    type EdgeErr = {
+      message?: string;
+      error?: string;
+      details?: string;
+      razorpay_error?: { description?: string | null };
+    };
+
+    function formatEdgeErrorBody(o: EdgeErr | null, status: number, rawText: string): string {
+      const rz = o?.razorpay_error?.description;
+      const parts = [o?.details, rz, o?.message, o?.error].filter(
+        (x): x is string => typeof x === "string" && x.length > 0,
+      );
+      if (parts.length) return parts[0];
+      const short = rawText.trim().slice(0, 200);
+      if (short && !short.startsWith("{")) {
+        return `Server returned non-JSON (${status}). Check VITE_SUPABASE_URL and that the Edge Function is deployed.`;
+      }
+      return `Request failed (${status})`;
+    }
+
     if (!res.ok) {
-      const o = parsed as { message?: string; error?: string; details?: string } | null;
-      // Prefer `details` (e.g. Razorpay message) over generic `error` string
-      const detail =
-        o?.details ||
-        o?.message ||
-        o?.error ||
-        (typeof raw === "string" && raw.length < 200 ? raw : null) ||
-        `Request failed (${res.status})`;
+      const o = (parsed && typeof parsed === "object" ? parsed : null) as EdgeErr | null;
+      const detail = formatEdgeErrorBody(o, res.status, raw);
       return { data: (parsed as T) ?? null, error: new Error(detail) };
+    }
+
+    // 200 OK but missing/invalid JSON (e.g. HTML from wrong URL, or empty body)
+    if (parsed === null || typeof parsed !== "object") {
+      const preview = raw.trim().slice(0, 120).replace(/\s+/g, " ");
+      const hint =
+        preview && !preview.startsWith("{")
+          ? `The app expected JSON from create-razorpay-order but got something else (preview: "${preview}"). Usually this means VITE_SUPABASE_URL is wrong or the function is not deployed.`
+          : "Empty response from create-razorpay-order. Deploy the Edge Function in Supabase and confirm the project URL.";
+      return { data: null, error: new Error(hint) };
     }
 
     return { data: parsed as T, error: null };

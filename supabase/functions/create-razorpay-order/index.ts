@@ -81,7 +81,8 @@ Deno.serve(async (req) => {
       receipt = truncateReceipt(`rcpt_${user.id.replace(/-/g, "").slice(0, 12)}_${Date.now()}`);
     }
 
-    const productIdStr = typeof productId === "string" ? productId : undefined;
+    const productIdStr =
+      productId != null && String(productId).trim() !== "" ? String(productId).trim() : undefined;
     if (!productIdStr) {
       return new Response(JSON.stringify({ error: "product_id is required" }), {
         status: 400,
