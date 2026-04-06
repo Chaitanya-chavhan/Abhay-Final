@@ -1,15 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Menu, X, User, LogOut, Package, ShieldCheck } from "lucide-react";
+import { Menu, X, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-const desktopNavLinks = [
-  { to: "/products", label: "Products" },
-  { to: "/refund", label: "Refund Policy" },
-  { to: "/terms", label: "Terms" },
-  { to: "/privacy", label: "Privacy" },
-];
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
@@ -47,68 +40,73 @@ const Navbar = () => {
   const avatarUrl = user?.user_metadata?.avatar_url;
   const displayName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email;
 
+  const navLinks = isAdmin
+    ? [
+        { to: "/admin", label: "Admin" },
+        { to: "/dashboard", label: "Dashboard" },
+        { to: "/", label: "Home" },
+        { to: "/products", label: "Products" },
+      ]
+    : [
+        { to: "/", label: "Home" },
+        { to: "/products", label: "Products" },
+      ];
+
   return (
     <>
-      <nav
-        className={`sticky top-0 z-50 transition-all duration-300 ${
-          scrolled ? "border-b border-border backdrop-blur-md bg-background/90 shadow-sm" : "bg-transparent"
-        }`}
-      >
-        <div className="container mx-auto flex items-center gap-4 px-4 py-3 md:px-6">
-          <Link
-            to="/"
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="flex shrink-0 items-center gap-3 group"
-          >
-            <img
-              src="/placeholder.svg"
-              alt=""
-              className="h-10 w-10 rounded-full border border-border object-cover transition-transform duration-300 group-hover:scale-105"
-            />
-            <span className="font-heading text-base font-bold text-foreground">Abhay Platforms</span>
-          </Link>
+      <div className={`fixed left-0 right-0 z-50 flex justify-center px-4 transition-all duration-500 ease-in-out ${scrolled ? "top-3" : "top-5"}`}>
+        <nav
+          className={`flex w-full max-w-5xl items-center justify-between gap-2 sm:gap-4 rounded-full px-4 py-3 transition-all duration-500 ease-in-out backdrop-blur-2xl ${
+            scrolled 
+              ? "bg-background/80 md:bg-card/70 shadow-[0_8px_30px_rgb(0,0,0,0.12)] ring-1 ring-border/50 translate-y-0" 
+              : "bg-background/60 md:bg-card/30 shadow-md ring-1 ring-border/20 translate-y-0"
+          }`}
+        >
+          <div className="flex shrink-0 items-center justify-start flex-1 min-w-[150px]">
+            <Link
+              to="/"
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              className="flex shrink-0 items-center gap-2 group"
+            >
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-lg shadow-primary/20">
+                <span className="font-heading text-sm font-bold">A</span>
+              </div>
+              <span className="font-heading text-base font-extrabold tracking-widest text-foreground transition-colors duration-300 group-hover:text-primary hidden sm:inline-block">
+                ABHAY DIGITAL
+              </span>
+            </Link>
+          </div>
 
-          <div className="hidden min-w-0 flex-1 items-center justify-end gap-6 md:flex">
-            <div className="flex flex-wrap items-center justify-end gap-1">
-              {desktopNavLinks.map((l) => (
+          <div className="hidden min-w-0 md:flex flex-none items-center justify-center">
+            <div className="flex items-center gap-1 rounded-full p-1 bg-secondary/50 ring-1 ring-border/20 shadow-inner">
+              {navLinks.map((l) => (
                 <button
                   key={l.to}
                   onClick={() => handleNavClick(l.to)}
-                  className={`rounded-full px-3 py-2 text-sm font-medium transition-colors ${
-                    isActive(l.to) ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                  className={`rounded-full px-5 py-1.5 text-sm font-medium transition-all duration-300 ${
+                    isActive(l.to) ? "bg-white text-foreground shadow-sm dark:bg-zinc-800" : "text-muted-foreground hover:text-foreground hover:bg-white/50 dark:hover:bg-white/5"
                   }`}
                 >
                   {l.label}
                 </button>
               ))}
             </div>
+          </div>
 
-            <div className="flex shrink-0 items-center gap-3">
+          <div className="flex shrink-0 items-center justify-end flex-1 gap-2 min-w-[150px]">
               {user ? (
                 <div className="flex items-center gap-2">
-                  {isAdmin && (
-                    <Link to="/admin" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-                      <Button variant="ghost" size="sm" className="gap-2 rounded-full text-primary hover:text-primary">
-                        <ShieldCheck className="h-4 w-4" />
-                        Admin
-                      </Button>
-                    </Link>
-                  )}
-                  <Link to="/dashboard" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-                    <Button variant="ghost" size="sm" className="gap-2 rounded-full text-muted-foreground hover:text-foreground">
-                      <Package className="h-4 w-4" />
-                      Dashboard
-                    </Button>
-                  </Link>
-                  <div className="flex items-center gap-2 rounded-full border border-border bg-secondary/60 px-3 py-1.5">
+                  <div className="flex items-center gap-2 rounded-full border border-border/50 bg-secondary/30 backdrop-blur-md px-3 py-1.5 shadow-sm">
                     {avatarUrl ? (
-                      <img src={avatarUrl} alt="" className="h-6 w-6 rounded-full" />
+                      <img src={avatarUrl} alt="" className="h-6 w-6 rounded-full ring-2 ring-primary/20" />
                     ) : (
-                      <User className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
+                        <User className="h-3.5 w-3.5 text-primary" />
+                      </div>
                     )}
-                    <span className="max-w-[120px] truncate text-sm text-foreground">{displayName?.toString().split(" ")[0]}</span>
+                    <span className="max-w-[120px] truncate text-sm font-medium text-foreground hidden md:inline-block">{displayName?.toString().split(" ")[0]}</span>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={logout} className="rounded-full text-muted-foreground hover:text-foreground">
+                  <Button variant="ghost" size="icon" onClick={logout} className="rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors">
                     <LogOut className="h-4 w-4" />
                   </Button>
                 </div>
@@ -116,28 +114,28 @@ const Navbar = () => {
                 <Link
                   to="/auth"
                   onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                  className="inline-flex rounded-full bg-primary px-6 py-2 text-sm font-semibold text-primary-foreground transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/30 active:scale-95"
+                  className="hidden sm:inline-flex items-center justify-center rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-all duration-300 hover:opacity-90 hover:shadow"
                 >
                   Sign In
                 </Link>
               )}
             </div>
-          </div>
 
-          <button
-            type="button"
-            onClick={() => setOpen(!open)}
-            className="relative z-50 ml-auto flex h-10 w-10 items-center justify-center rounded-xl text-foreground md:ml-0 md:hidden"
-            aria-expanded={open}
-            aria-label={open ? "Close menu" : "Open menu"}
-          >
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
-        </div>
-      </nav>
+            {/* Mobile menu button */}
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className="relative z-50 flex h-9 w-9 items-center justify-center rounded-full bg-secondary/50 text-foreground ring-1 ring-border/30 md:hidden"
+              aria-expanded={open}
+              aria-label="Open menu"
+            >
+              <Menu className="h-4 w-4" />
+            </button>
+        </nav>
+      </div>
 
       <div
-        className={`fixed inset-0 z-40 bg-background/80 backdrop-blur-sm transition-opacity duration-300 md:hidden ${
+        className={`fixed inset-0 z-[60] bg-background/80 backdrop-blur-sm transition-opacity duration-300 md:hidden ${
           open ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
         }`}
         onClick={() => setOpen(false)}
@@ -145,22 +143,24 @@ const Navbar = () => {
       />
 
       <div
-        className={`fixed right-0 top-0 z-40 h-full w-[280px] border-l border-border bg-card shadow-2xl transition-transform duration-300 ease-out md:hidden ${
+        className={`fixed right-0 top-0 z-[70] h-full w-[280px] border-l border-border bg-card shadow-2xl transition-transform duration-300 ease-out md:hidden ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <div className="flex h-full flex-col px-6 pb-8 pt-20">
-          <div className="flex flex-col gap-1">
+        <div className="flex h-full flex-col px-6 pb-8 pt-6">
+          <div className="flex items-center justify-between mb-8">
+            <span className="font-heading text-lg font-bold">Menu</span>
             <button
               type="button"
-              onClick={() => handleNavClick("/")}
-              className={`flex items-center rounded-xl px-4 py-3.5 text-sm font-medium transition-colors ${
-                isActive("/") ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-secondary"
-              }`}
+              onClick={() => setOpen(false)}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary/50 text-foreground ring-1 ring-border/30 hover:bg-secondary/80 transition-colors"
+              aria-label="Close menu"
             >
-              Home
+              <X className="h-4 w-4" />
             </button>
-            {desktopNavLinks.map((l) => (
+          </div>
+          <div className="flex flex-col gap-1">
+            {navLinks.map((l) => (
               <button
                 key={l.to}
                 type="button"
@@ -188,25 +188,6 @@ const Navbar = () => {
                 )}
                 <span className="truncate text-sm font-medium text-foreground">{displayName?.toString().split(" ")[0]}</span>
               </div>
-
-              {isAdmin && (
-                <button
-                  type="button"
-                  onClick={() => handleNavClick("/admin")}
-                  className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-medium text-primary hover:bg-secondary"
-                >
-                  <ShieldCheck className="h-4 w-4" />
-                  Admin Dashboard
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => handleNavClick("/dashboard")}
-                className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-medium text-foreground hover:bg-secondary"
-              >
-                <Package className="h-4 w-4" />
-                Dashboard
-              </button>
 
               <div className="mt-auto pt-4">
                 <button

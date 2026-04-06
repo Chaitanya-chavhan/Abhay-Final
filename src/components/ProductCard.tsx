@@ -33,8 +33,8 @@ const ProductCard = ({ product }: { product: Product }) => {
       </div>
 
       <div className="flex flex-1 flex-col p-6">
-        <span className="text-xs font-semibold tracking-wider text-primary uppercase">{product.category}</span>
-        <h3 className="mt-2 font-heading text-lg font-semibold text-foreground transition-colors duration-300 group-hover:text-primary">
+        <span className="text-xs font-bold tracking-[0.15em] text-primary uppercase">{product.category}</span>
+        <h3 className="mt-2 font-heading text-xl font-extrabold tracking-tight text-foreground transition-colors duration-300 group-hover:text-primary">
           {product.title}
         </h3>
         <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground">{product.description}</p>

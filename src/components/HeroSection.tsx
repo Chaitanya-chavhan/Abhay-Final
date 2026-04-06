@@ -41,10 +41,10 @@ const HeroSection = () => {
           </span>
         </div>
 
-        <h1 className="animate-slide-up font-heading text-3xl font-bold leading-[1.1] text-foreground tracking-tight sm:text-5xl md:text-7xl lg:text-8xl">
+        <h1 className="animate-slide-up font-heading text-4xl font-extrabold leading-[1.1] text-foreground tracking-tight sm:text-6xl md:text-7xl lg:text-8xl drop-shadow-sm">
           Get Premium{" "}
           <span
-            className={`inline-block text-gradient transition-all duration-400 ${
+            className={`inline-block text-gradient neon-glow transition-all duration-400 ${
               show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
             }`}
             style={{ minWidth: "3ch" }}
@@ -52,11 +52,11 @@ const HeroSection = () => {
             {words[wordIndex]}
           </span>
           <br />
-          <span className="relative">
+          <span className="relative inline-block mt-2">
             At Unbeatable
-            <span className="relative ml-2 sm:ml-3 inline-block">
-              <span className="relative z-10">Prices!</span>
-              <span className="absolute -bottom-0.5 left-0 h-2 w-full rounded bg-primary/15 sm:-bottom-1 sm:h-3" />
+            <span className="relative ml-2 sm:ml-4 inline-block">
+              <span className="relative z-10 text-primary">Prices!</span>
+              <span className="absolute -bottom-1 left-0 h-3 w-full rounded bg-primary/20 blur-sm" />
             </span>
           </span>
         </h1>
@@ -78,7 +78,7 @@ const HeroSection = () => {
           <Link
             to="/products"
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="group flex items-center gap-2 rounded-full bg-primary px-8 py-3.5 text-sm font-semibold text-primary-foreground transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 hover:scale-105 active:scale-95 sm:px-10 sm:py-4 sm:text-base"
+            className="group flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-accent px-8 py-3.5 text-sm font-bold text-primary-foreground transition-all duration-300 hover:shadow-glow hover:scale-105 active:scale-95 sm:px-10 sm:py-4 sm:text-base ring-1 ring-white/20"
           >
             Explore Products
             <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1.5" />

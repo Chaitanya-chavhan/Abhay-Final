@@ -18,8 +18,9 @@ const Footer = () => {
                 <span className="font-heading text-xl font-bold text-primary-foreground">A</span>
               </div>
               <div className="flex flex-col leading-tight">
-                <span className="font-heading text-sm font-bold text-foreground group-hover:neon-glow transition-all duration-300">Abhay Digital</span>
-                <span className="text-[10px] text-muted-foreground">Products</span>
+                <span className="font-heading text-lg font-extrabold tracking-[0.1em] text-slate-800 dark:text-slate-200 transition-colors duration-300 group-hover:text-primary">
+                  ABHAY DIGITAL PRODUCTS
+                </span>
               </div>
             </div>
             <p className="mt-5 max-w-xs text-sm leading-relaxed text-muted-foreground">

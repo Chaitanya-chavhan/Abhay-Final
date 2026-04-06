@@ -132,12 +132,17 @@ const Auth = () => {
     }
 
     return (
-      <div className="min-h-screen pt-28 pb-16">
-        <div className="container mx-auto max-w-md px-4">
-          <div className="rounded-2xl border border-border bg-card p-8 shadow-lg">
-            <h1 className="font-heading text-2xl font-bold text-foreground">Choose a new password</h1>
-            <Form {...recoveryForm}>
-              <form onSubmit={recoveryForm.handleSubmit(onRecovery)} className="mt-6 space-y-4">
+      <div className="relative min-h-screen pt-28 pb-16 flex items-center justify-center overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/10" />
+          <div className="absolute -top-[500px] left-1/2 h-[1000px] w-[1000px] -translate-x-1/2 rounded-full bg-primary/5 blur-[120px]" />
+          <div className="container relative mx-auto max-w-md px-4 z-10">
+            <div className="rounded-3xl border border-border/50 bg-card/60 p-8 shadow-2xl backdrop-blur-xl ring-1 ring-white/10 relative overflow-hidden">
+              <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-50" />
+              <div className="text-center mb-8">
+                <h1 className="font-heading text-3xl font-extrabold tracking-tight text-foreground">Choose a new password</h1>
+              </div>
+              <Form {...recoveryForm}>
+                <form onSubmit={recoveryForm.handleSubmit(onRecovery)} className="space-y-5">
                 <FormField
                   control={recoveryForm.control}
                   name="password"
@@ -164,8 +169,8 @@ const Auth = () => {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full" disabled={submitting}>
-                  {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update password"}
+                <Button type="submit" className="w-full h-11 text-base font-semibold group rounded-xl bg-primary text-primary-foreground hover:shadow-[0_0_20px_-5px_rgba(var(--primary),0.5)] transition-all duration-300" disabled={submitting}>
+                  {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : "Update password"}
                 </Button>
               </form>
             </Form>
@@ -177,15 +182,20 @@ const Auth = () => {
 
   if (showForgot) {
     return (
-      <div className="min-h-screen pt-28 pb-16">
-        <div className="container mx-auto max-w-md px-4">
-          <div className="rounded-2xl border border-border bg-card p-8 shadow-lg">
-            <h1 className="font-heading text-2xl font-bold text-foreground">Reset password</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              We will email you a link to choose a new password.
-            </p>
+      <div className="relative min-h-screen pt-28 pb-16 flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/10" />
+        <div className="absolute -top-[500px] left-1/2 h-[1000px] w-[1000px] -translate-x-1/2 rounded-full bg-primary/5 blur-[120px]" />
+        <div className="container relative mx-auto max-w-md px-4 z-10">
+          <div className="rounded-3xl border border-border/50 bg-card/60 p-8 shadow-2xl backdrop-blur-xl ring-1 ring-white/10 relative overflow-hidden">
+            <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-50" />
+            <div className="text-center mb-8">
+              <h1 className="font-heading text-3xl font-extrabold tracking-tight text-foreground">Reset password</h1>
+              <p className="mt-2 text-sm text-muted-foreground">
+                We will email you a link to choose a new password.
+              </p>
+            </div>
             <Form {...forgotForm}>
-              <form onSubmit={forgotForm.handleSubmit(onForgot)} className="mt-6 space-y-4">
+              <form onSubmit={forgotForm.handleSubmit(onForgot)} className="space-y-5">
                 <FormField
                   control={forgotForm.control}
                   name="email"
@@ -199,12 +209,12 @@ const Auth = () => {
                     </FormItem>
                   )}
                 />
-                <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
-                  <Button type="button" variant="ghost" onClick={() => setShowForgot(false)}>
-                    Back
+                <div className="flex flex-col gap-3 sm:flex-row sm:justify-between pt-2">
+                  <Button type="button" variant="ghost" className="h-11 rounded-xl" onClick={() => setShowForgot(false)}>
+                    Back to login
                   </Button>
-                  <Button type="submit" disabled={submitting}>
-                    {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send link"}
+                  <Button type="submit" className="h-11 px-8 text-base font-semibold group rounded-xl bg-primary text-primary-foreground hover:shadow-[0_0_20px_-5px_rgba(var(--primary),0.5)] transition-all duration-300" disabled={submitting}>
+                    {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : "Send reset link"}
                   </Button>
                 </div>
               </form>
@@ -216,11 +226,18 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen pt-28 pb-16">
-      <div className="container mx-auto max-w-md px-4">
-        <div className="rounded-2xl border border-border bg-card p-8 shadow-lg">
-          <h1 className="font-heading text-2xl font-bold text-foreground">Account</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Sign in with email and password.</p>
+    <div className="relative min-h-screen pt-28 pb-16 flex items-center justify-center overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/10" />
+      <div className="absolute -top-[500px] left-1/2 h-[1000px] w-[1000px] -translate-x-1/2 rounded-full bg-primary/5 blur-[120px]" />
+      
+      <div className="container relative mx-auto max-w-md px-4 z-10">
+        <div className="rounded-3xl border border-border/50 bg-card/60 p-8 shadow-2xl backdrop-blur-xl ring-1 ring-white/10 relative overflow-hidden">
+          <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-50" />
+          
+          <div className="text-center mb-8">
+            <h1 className="font-heading text-3xl font-extrabold tracking-tight text-foreground">Welcome Back</h1>
+            <p className="mt-2 text-sm text-muted-foreground">Sign in to your account securely</p>
+          </div>
 
           <Tabs defaultValue="signin" className="mt-6">
             <TabsList className="grid w-full grid-cols-2">
@@ -265,8 +282,8 @@ const Auth = () => {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full" disabled={submitting}>
-                    {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign in"}
+                  <Button type="submit" className="w-full h-11 text-base font-semibold group rounded-xl bg-primary text-primary-foreground hover:shadow-[0_0_20px_-5px_rgba(var(--primary),0.5)] transition-all duration-300" disabled={submitting}>
+                    {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : "Sign in to Dashboard"}
                   </Button>
                 </form>
               </Form>
@@ -300,8 +317,8 @@ const Auth = () => {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full" disabled={submitting}>
-                    {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create account"}
+                  <Button type="submit" className="w-full h-11 text-base font-semibold group rounded-xl bg-primary text-primary-foreground hover:shadow-[0_0_20px_-5px_rgba(var(--primary),0.5)] transition-all duration-300" disabled={submitting}>
+                    {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : "Create free account"}
                   </Button>
                 </form>
               </Form>

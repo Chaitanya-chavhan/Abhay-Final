@@ -258,36 +258,42 @@ const ProductDetail = () => {
           <ArrowLeft className="h-4 w-4" /> Back to Products
         </Link>
 
-        <div className="mt-8 grid gap-10 lg:grid-cols-2">
-          <div className="relative aspect-[9/16] overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="mt-8 grid gap-12 lg:grid-cols-2 items-start">
+          <div className="relative aspect-[4/5] overflow-hidden rounded-3xl border border-border/50 bg-card/60 shadow-2xl shadow-primary/5 ring-1 ring-white/10 backdrop-blur-sm group">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 opacity-50 transition-opacity duration-500 group-hover:opacity-100" />
             {product.image_url ? (
-              <img src={product.image_url} alt={product.title} className="h-full w-full object-cover" />
+              <img src={product.image_url} alt={product.title} className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105" />
             ) : (
-              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 to-secondary">
-                <span className="font-heading text-6xl font-bold text-primary/30">{product.title.charAt(0)}</span>
+              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5">
+                <span className="font-heading text-8xl font-bold tracking-tighter text-primary/20 drop-shadow-sm transition-all duration-500 group-hover:scale-110 group-hover:text-primary/30">{product.title.charAt(0)}</span>
               </div>
             )}
+            <div className="absolute inset-0 rounded-3xl ring-1 ring-inset ring-black/10 dark:ring-white/10 pointer-events-none" />
           </div>
 
-          <div>
-            <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-              {product.category}
-            </span>
-            {product.tag && (
-              <span className="ml-2 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
-                {product.tag}
+          <div className="flex flex-col">
+            <div className="flex items-center gap-3">
+              <span className="rounded-full bg-primary/10 border border-primary/20 px-4 py-1.5 text-xs font-semibold tracking-wide text-primary uppercase">
+                {product.category}
               </span>
-            )}
+              {product.tag && (
+                <span className="rounded-full bg-gradient-to-r from-primary to-primary/80 px-4 py-1.5 text-xs font-bold tracking-wide text-primary-foreground shadow-sm shadow-primary/20">
+                  {product.tag}
+                </span>
+              )}
+            </div>
 
-            <h1 className="mt-4 font-heading text-3xl font-bold text-foreground md:text-4xl">
+            <h1 className="mt-6 font-heading text-4xl font-extrabold tracking-tight text-foreground md:text-5xl lg:leading-tight">
               {product.title}
             </h1>
-            <p className="mt-4 text-muted-foreground">{product.description}</p>
+            <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
+              {product.description}
+            </p>
 
-            <div className="mt-6 flex items-baseline gap-3">
-              <span className="font-heading text-4xl font-bold text-foreground">₹{product.price}</span>
-              <span className="text-lg text-muted-foreground line-through">₹{product.original_price}</span>
-              <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
+            <div className="mt-8 flex items-baseline gap-4 rounded-2xl bg-secondary/30 p-6 border border-border/50">
+              <span className="font-heading text-5xl font-extrabold text-foreground tracking-tight">₹{product.price}</span>
+              <span className="text-xl text-muted-foreground line-through decoration-muted-foreground/50">₹{product.original_price}</span>
+              <span className="ml-auto flex items-center justify-center rounded-full bg-green-500/10 px-4 py-1.5 text-sm font-bold text-green-600 dark:text-green-400 border border-green-500/20">
                 {discount}% OFF
               </span>
             </div>
@@ -295,9 +301,23 @@ const ProductDetail = () => {
             <Button
               onClick={handleBuyNow}
               disabled={purchasing}
-              className="mt-8 w-full rounded-full bg-primary py-6 text-lg font-semibold text-primary-foreground hover:bg-primary/90 hover:shadow-glow sm:w-auto sm:px-12"
+              className="group relative mt-8 h-14 w-full overflow-hidden rounded-2xl bg-primary text-lg font-bold text-primary-foreground transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_40px_-10px_rgba(var(--primary),0.5)] active:scale-[0.98] sm:h-16 sm:text-xl"
             >
-              {purchasing ? "Processing..." : purchased ? "✓ Purchased — Go to Dashboard" : user ? "Buy Now" : "Sign In to Buy"}
+              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-r from-primary via-primary/80 to-primary transition-all duration-500 group-hover:bg-gradient-to-l" />
+              <div className="relative flex items-center justify-center gap-2">
+                {purchasing ? (
+                  <>
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
+                    Processing Secure Payment...
+                  </>
+                ) : purchased ? (
+                  "✓ Purchased — Go to Dashboard"
+                ) : user ? (
+                  "Buy Now Securely"
+                ) : (
+                  "Sign In to Buy"
+                )}
+              </div>
             </Button>
 
             <div className="mt-8 space-y-3">

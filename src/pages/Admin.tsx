@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Pencil, Trash2, Package, CreditCard, Users, ShieldCheck, X, Save, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Upload } from "lucide-react";
 
 interface Product {
   id: string;
@@ -75,6 +76,7 @@ const Admin = () => {
   const [featuresInput, setFeaturesInput] = useState("");
   const [adminEmails, setAdminEmails] = useState<{ id: string; email: string }[]>([]);
   const [newAdminEmail, setNewAdminEmail] = useState("");
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const fetchAll = async () => {
     setLoadingData(true);
@@ -117,6 +119,37 @@ const Admin = () => {
     });
     setFeaturesInput((p.features || []).join(", "));
     setDialogOpen(true);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      if (!e.target.files || e.target.files.length === 0) return;
+      const file = e.target.files[0];
+      setUploadingImage(true);
+      
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError, data } = await supabase.storage
+        .from('products')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('products')
+        .getPublicUrl(filePath);
+
+      setEditProduct({ ...editProduct, image_url: publicUrl });
+      toast({ title: "Image uploaded successfully!", description: "Image URL updated." });
+    } catch (error: any) {
+      toast({ title: "Upload failed", description: error.message || "Ensure 'products' bucket exists and is public.", variant: "destructive" });
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const handleSave = async () => {
@@ -290,8 +323,15 @@ const Admin = () => {
                       </div>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-foreground">Image URL</label>
-                      <Input value={editProduct.image_url} onChange={(e) => setEditProduct({ ...editProduct, image_url: e.target.value })} />
+                      <label className="text-sm font-medium text-foreground">Image URL (or Upload direct)</label>
+                      <div className="flex gap-2">
+                        <Input value={editProduct.image_url} onChange={(e) => setEditProduct({ ...editProduct, image_url: e.target.value })} placeholder="https://..." className="flex-1" />
+                        <label className="relative flex cursor-pointer items-center justify-center rounded-md border border-input bg-secondary px-4 hover:bg-secondary/80 transition-colors">
+                          <span className="sr-only">Upload Image</span>
+                          {uploadingImage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                          <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} disabled={uploadingImage} />
+                        </label>
+                      </div>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-foreground">Google Drive Link (private)</label>
