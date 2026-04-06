@@ -90,8 +90,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    const amountInPaise = Math.round(parsedAmount * 100);
     const amountRupees = Math.round(parsedAmount);
+    const amountInPaise = amountRupees * 100;
 
     const { data: product, error: productError } = await supabase
       .from("products")

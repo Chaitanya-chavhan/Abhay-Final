@@ -380,7 +380,7 @@ const Admin = () => {
                   {orders.map((o) => (
                     <TableRow key={o.id}>
                       <TableCell className="font-medium">{o.products?.title || o.product_id.slice(0, 8)}</TableCell>
-                      <TableCell>₹{o.amount / 100}</TableCell>
+                      <TableCell>₹{o.amount}</TableCell>
                       <TableCell>
                         <span className={`rounded-full px-2 py-1 text-xs font-medium ${
                           o.status === "paid" ? "bg-green-100 text-green-700" : o.status === "created" ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-700"
