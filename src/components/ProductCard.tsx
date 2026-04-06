@@ -17,11 +17,11 @@ const ProductCard = ({ product }: { product: Product }) => {
         </span>
       )}
 
-      <div className="relative aspect-video w-full overflow-hidden bg-secondary">
+      <div className="relative aspect-[9/16] overflow-hidden bg-muted">
         {product.image_url ? (
           <img src={product.image_url} alt={product.title} className="h-full w-full object-cover transition-all duration-700 group-hover:scale-110" />
         ) : (
-          <div className="flex h-full items-center justify-center bg-gradient-to-br from-primary/10 via-card to-secondary transition-all duration-700 group-hover:scale-110">
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 via-card to-secondary transition-all duration-700 group-hover:scale-110">
             <span className="font-heading text-5xl font-bold text-primary/30 transition-all duration-500 group-hover:text-primary/50 group-hover:scale-110">{product.title.charAt(0)}</span>
           </div>
         )}

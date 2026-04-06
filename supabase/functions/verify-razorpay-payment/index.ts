@@ -5,22 +5,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-async function verifySignature(orderId: string, paymentId: string, signature: string, secret: string): Promise<boolean> {
-  const enc = new TextEncoder();
-  const key = await globalThis.crypto.subtle.importKey(
-    "raw",
-    enc.encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"]
-  );
-  const signed = await globalThis.crypto.subtle.sign("HMAC", key, enc.encode(`${orderId}|${paymentId}`));
-  const expectedSignature = Array.from(new Uint8Array(signed))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-  return expectedSignature === signature;
-}
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -80,10 +64,25 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Verify signature
-    const isValid = await verifySignature(razorpay_order_id, razorpay_payment_id, razorpay_signature, razorpayKeySecret);
+    // HMAC SHA-256 via Web Crypto (Deno); do not use Node's `crypto` module.
+    const enc = new TextEncoder();
+    const cryptoKey = await crypto.subtle.importKey(
+      "raw",
+      enc.encode(razorpayKeySecret),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"],
+    );
+    const signatureBuffer = await crypto.subtle.sign(
+      "HMAC",
+      cryptoKey,
+      enc.encode(`${razorpay_order_id}|${razorpay_payment_id}`),
+    );
+    const expectedHex = Array.from(new Uint8Array(signatureBuffer))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
 
-    if (!isValid) {
+    if (expectedHex !== razorpay_signature) {
       // Update order status to failed
       await supabase
         .from("orders")

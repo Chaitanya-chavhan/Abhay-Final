@@ -64,10 +64,11 @@ export async function invokeEdgeFunction<T = unknown>(
 
     if (!res.ok) {
       const o = parsed as { message?: string; error?: string; details?: string } | null;
+      // Prefer `details` (e.g. Razorpay message) over generic `error` string
       const detail =
-        o?.error ||
-        o?.message ||
         o?.details ||
+        o?.message ||
+        o?.error ||
         (typeof raw === "string" && raw.length < 200 ? raw : null) ||
         `Request failed (${res.status})`;
       return { data: (parsed as T) ?? null, error: new Error(detail) };

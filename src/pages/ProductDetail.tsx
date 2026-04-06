@@ -8,21 +8,50 @@ import { invokeEdgeFunction } from "@/lib/supabase-edge-function";
 import type { Product } from "@/lib/products";
 import { useEffect, useState } from "react";
 
+const RAZORPAY_SCRIPT_URL = "https://checkout.razorpay.com/v1/checkout.js";
+
+let razorpayScriptPromise: Promise<void> | null = null;
+
+/** Loads Razorpay Checkout via a dynamically injected script (no `razorpay` npm package). */
+function loadRazorpayScript(): Promise<void> {
+  if (typeof window === "undefined") {
+    return Promise.reject(new Error("Razorpay can only load in the browser"));
+  }
+  if ((window as unknown as { Razorpay?: unknown }).Razorpay) {
+    return Promise.resolve();
+  }
+  const existing = document.querySelector<HTMLScriptElement>(`script[src="${RAZORPAY_SCRIPT_URL}"]`);
+  if (existing) {
+    return new Promise((resolve, reject) => {
+      if ((window as unknown as { Razorpay?: unknown }).Razorpay) {
+        resolve();
+        return;
+      }
+      existing.addEventListener("load", () => resolve(), { once: true });
+      existing.addEventListener("error", () => reject(new Error("Failed to load Razorpay script")), { once: true });
+    });
+  }
+  if (!razorpayScriptPromise) {
+    razorpayScriptPromise = new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = RAZORPAY_SCRIPT_URL;
+      script.async = true;
+      script.onload = () => resolve();
+      script.onerror = () => {
+        razorpayScriptPromise = null;
+        reject(new Error("Failed to load Razorpay script"));
+      };
+      document.body.appendChild(script);
+    });
+  }
+  return razorpayScriptPromise;
+}
+
 type RazorpayPaymentResponse = {
   razorpay_order_id: string;
   razorpay_payment_id: string;
   razorpay_signature: string;
 };
-
-type RazorpayInstance = { open: () => void };
-
-type RazorpayConstructor = new (options: Record<string, unknown>) => RazorpayInstance;
-
-declare global {
-  interface Window {
-    Razorpay?: RazorpayConstructor;
-  }
-}
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -43,7 +72,7 @@ const ProductDetail = () => {
         .eq("id", id)
         .eq("is_active", true)
         .single();
-      
+
       if (data) setProduct(data as Product);
       setLoading(false);
     };
@@ -63,16 +92,6 @@ const ProductDetail = () => {
     };
     checkPurchase();
   }, [user, id]);
-
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.async = true;
-    document.body.appendChild(script);
-    return () => {
-      script.remove();
-    };
-  }, []);
 
   if (loading) {
     return (
@@ -97,7 +116,7 @@ const ProductDetail = () => {
 
   const discount = Math.round(((product.original_price - product.price) / product.original_price) * 100);
 
-  const handleBuy = async () => {
+  const handleBuyNow = async () => {
     if (!user || !session) {
       const path = id ? `/product/${id}` : "/products";
       navigate(`/auth?redirect=${encodeURIComponent(path)}`);
@@ -111,6 +130,14 @@ const ProductDetail = () => {
 
     setPurchasing(true);
     try {
+      await loadRazorpayScript();
+    } catch {
+      toast({ title: "Error", description: "Payment system failed to load. Please try again.", variant: "destructive" });
+      setPurchasing(false);
+      return;
+    }
+
+    try {
       const { data, error } = await invokeEdgeFunction<{
         order_id?: string;
         error?: string;
@@ -118,12 +145,15 @@ const ProductDetail = () => {
         amount?: number;
         currency?: string;
         product_title?: string;
-      }>("create-razorpay-order", { product_id: product.id });
+      }>("create-razorpay-order", {
+        amount: product.price,
+        product_id: product.id,
+      });
 
       if (error || !data?.order_id) {
         const detail =
-          data?.error ||
           (data as { details?: string } | undefined)?.details ||
+          data?.error ||
           error?.message ||
           "Failed to create order. Please try again.";
         toast({ title: "Error", description: detail, variant: "destructive" });
@@ -146,7 +176,7 @@ const ProductDetail = () => {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
-              }
+              },
             );
 
             if (verifyError || !verifyData?.success) {
@@ -177,13 +207,14 @@ const ProductDetail = () => {
         },
       };
 
-      if (window.Razorpay) {
-        const rzp = new window.Razorpay(options);
-        rzp.open();
-      } else {
+      const Razorpay = (window as unknown as { Razorpay?: new (opts: typeof options) => { open: () => void } }).Razorpay;
+      if (!Razorpay) {
         toast({ title: "Error", description: "Payment system loading. Please try again.", variant: "destructive" });
         setPurchasing(false);
+        return;
       }
+      const rzp = new Razorpay(options);
+      rzp.open();
     } catch {
       toast({ title: "Error", description: "Failed to initiate payment.", variant: "destructive" });
       setPurchasing(false);
@@ -198,11 +229,11 @@ const ProductDetail = () => {
         </Link>
 
         <div className="mt-8 grid gap-10 lg:grid-cols-2">
-          <div className="overflow-hidden rounded-2xl border border-border bg-card">
+          <div className="relative aspect-[9/16] overflow-hidden rounded-2xl border border-border bg-card">
             {product.image_url ? (
-              <img src={product.image_url} alt={product.title} className="aspect-video w-full object-cover" />
+              <img src={product.image_url} alt={product.title} className="h-full w-full object-cover" />
             ) : (
-              <div className="flex aspect-video items-center justify-center bg-gradient-to-br from-primary/10 to-secondary">
+              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 to-secondary">
                 <span className="font-heading text-6xl font-bold text-primary/30">{product.title.charAt(0)}</span>
               </div>
             )}
@@ -232,7 +263,7 @@ const ProductDetail = () => {
             </div>
 
             <Button
-              onClick={handleBuy}
+              onClick={handleBuyNow}
               disabled={purchasing}
               className="mt-8 w-full rounded-full bg-primary py-6 text-lg font-semibold text-primary-foreground hover:bg-primary/90 hover:shadow-glow sm:w-auto sm:px-12"
             >
